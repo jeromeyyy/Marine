@@ -77,4 +77,51 @@ export const speciesLocationsAPI = {
   getStats: () => api.get('/api/species-locations/stats'),
 };
 
+export const digitalTwinAPI = {
+  simulate: (params: {
+    tempDelta?: number;
+    salinityDelta?: number;
+    phDelta?: number;
+    oxygenDelta?: number;
+    fishingPressure?: number;
+    pollutionIndex?: number;
+    region?: string;
+  }) => api.post('/api/digital-twin/simulate', params),
+};
+
+export const gisAPI = {
+  getLayers: () => api.get('/api/gis/layers'),
+};
+
+export const vesselsAPI = {
+  getTracking: () => api.get('/api/vessels/tracking'),
+};
+
+export const sensorsAPI = {
+  getLive: () => api.get('/api/sensors/live'),
+};
+
+export const satelliteAPI = {
+  getPFZ: () => api.get('/api/satellite/pfz'),
+  getHAB: () => api.get('/api/satellite/hab'),
+};
+
+export const explorerAPI = {
+  query: (params?: any) => api.get('/api/explorer/query', { params }),
+};
+
+export const alertsAPI = {
+  getActive: () => api.get('/api/alerts/active'),
+  getSummary: () => api.get('/api/alerts/summary'),
+  acknowledge: (id: string | number) => api.post(`/api/alerts/${id}/acknowledge`),
+};
+
+export const biodiversityAPI = {
+  getKPIs: () => api.get('/api/biodiversity/kpis'),
+  getRichness: (params?: any) => api.get('/api/biodiversity/richness', { params }),
+  getRiskIndex: () => api.get('/api/biodiversity/risk-index'),
+  getAnomalies: () => api.get('/api/biodiversity/anomalies'),
+  getSequences: () => api.get('/api/biodiversity/sequences'),
+};
+
 export default api;

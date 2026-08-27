@@ -1,21 +1,16 @@
 import type { Metadata } from 'next';
-import { Manrope, Fraunces } from 'next/font/google';
+import { Inter } from 'next/font/google';
 import './globals.css';
-import Navigation from '@/components/Navigation';
+import AppLayout from '@/components/AppLayout';
 
-const manrope = Manrope({
+const inter = Inter({
   subsets: ['latin'],
-  variable: '--font-manrope',
-});
-
-const fraunces = Fraunces({
-  subsets: ['latin'],
-  variable: '--font-fraunces',
+  variable: '--font-inter',
 });
 
 export const metadata: Metadata = {
-  title: 'Marine Data Platform',
-  description: 'AI-Driven Unified Marine Data Platform',
+  title: 'Ratnakara Marine AI Platform',
+  description: 'AI-Driven Multimodal Oceanographic, Fisheries & eDNA Platform',
 };
 
 export default function RootLayout({
@@ -24,12 +19,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body className={`${manrope.variable} ${fraunces.variable}`}>
-        <Navigation />
-        <main className="lg:ml-72 min-h-screen">
-          {children}
-        </main>
+    <html lang="en" className="dark">
+      <body className={`${inter.className} min-h-screen bg-[#070c18] text-slate-100 antialiased`}>
+        <AppLayout>{children}</AppLayout>
       </body>
     </html>
   );

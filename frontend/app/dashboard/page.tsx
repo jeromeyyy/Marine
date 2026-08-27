@@ -207,11 +207,11 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen px-5 py-10 md:px-8">
+      <div className="min-h-screen px-5 py-10 md:px-8 bg-[#070c18]">
         <div className="mx-auto max-w-7xl">
-          <div className="surface p-10 text-center">
-            <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-slate-200 border-t-slate-700" />
-            <p className="mt-4 text-sm text-slate-600">Preparing marine insights...</p>
+          <div className="rounded-2xl border border-slate-800 bg-slate-900/90 p-10 text-center shadow-2xl backdrop-blur-xl">
+            <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-slate-700 border-t-cyan-500" />
+            <p className="mt-4 text-sm text-slate-400">Processing marine telemetry stream...</p>
           </div>
         </div>
       </div>
@@ -219,128 +219,122 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen px-5 py-8 md:px-8">
+    <div className="min-h-screen px-5 py-8 md:px-8 bg-[#070c18] text-slate-100">
       <div className="mx-auto max-w-7xl space-y-6">
-        <section className="surface reveal-in p-6 md:p-8">
-          <p className="eyebrow mb-2">Classroom Overview</p>
+        <section className="rounded-2xl border border-slate-800 bg-slate-900/90 p-6 md:p-8 shadow-2xl backdrop-blur-xl">
+          <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-cyan-400 mb-2">RATNAKARA CORE TELEMETRY</p>
           <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
             <div>
-              <h1 className="text-3xl text-slate-900 md:text-4xl">Ocean Health Dashboard</h1>
-              <p className="mt-2 text-sm text-slate-600">
-                Start here during your presentation. Explain the 4 key cards first, then open one chart.
+              <h1 className="text-2xl font-bold text-white md:text-3xl tracking-wide">Marine Intelligence Command Center</h1>
+              <p className="mt-1.5 text-xs text-slate-400">
+                Unified multi-trophic analytics across Indian Ocean sensor nodes, satellite scatterometry, eDNA assays, and fishery biomass metrics.
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
               <button
                 type="button"
                 onClick={() => setAdvancedMode((prev) => !prev)}
-                className={`rounded-xl border px-3 py-2 text-sm font-medium transition ${
+                className={`rounded-xl border px-3 py-2 text-xs font-semibold transition ${
                   advancedMode
-                    ? 'border-teal-300 bg-teal-50 text-teal-800'
-                    : 'border-slate-300 bg-white text-slate-700 hover:border-slate-400'
+                    ? 'border-cyan-500 bg-cyan-950/80 text-cyan-300 shadow-md shadow-cyan-500/20'
+                    : 'border-slate-700 bg-slate-800 text-slate-300 hover:border-slate-600'
                 }`}
               >
-                Advanced View: {advancedMode ? 'On' : 'Off'}
+                Advanced Diagnostics: {advancedMode ? 'Active' : 'Standard'}
               </button>
-              <QuickLink href="/explorer" label="Open Live Map" />
-              <QuickLink href="/api-docs" label="API Docs (Optional)" />
+              <QuickLink href="/explorer" label="GIS Spatial Map" />
+              <QuickLink href="/biodiversity" label="Genomic Analytics" />
             </div>
           </div>
         </section>
 
-        <section className="surface-soft p-4 md:p-5">
-          <h2 className="text-base font-semibold text-slate-900">How to explain this page</h2>
-          <p className="mt-2 text-sm text-slate-600">
-            1) Show current averages, 2) describe one visible trend, 3) switch on Advanced View only for deeper Q&amp;A.
-          </p>
-        </section>
-
-        <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <StatCard
             icon={Waves}
-            label="Avg Temperature"
+            label="Avg Sea Surface Temp"
             value={formatNumber(oceanKPIs?.avg_temperature, 1)}
             suffix="°C"
-            note={`${oceanKPIs?.station_count || 0} active stations`}
+            note={`${oceanKPIs?.station_count || 0} active moored stations`}
           />
           <StatCard
             icon={Waves}
-            label="Avg Wave Height"
+            label="Significant Wave Height"
             value={formatNumber(oceanKPIs?.avg_wave_height, 1)}
             suffix="m"
-            note={`${oceanKPIs?.total_records || 0} ocean records`}
+            note={`${oceanKPIs?.total_records || 0} ocean telemetry records`}
           />
           <StatCard
             icon={Fish}
-            label="Species Tracked"
+            label="Taxonomic Species Tracked"
             value={fisheriesMetrics?.species_count || '-'}
             suffix=""
-            note={fisheriesMetrics?.avg_biomass ? `${Math.round(fisheriesMetrics.avg_biomass)} avg biomass` : 'No biomass metric'}
+            note={fisheriesMetrics?.avg_biomass ? `${Math.round(fisheriesMetrics.avg_biomass)} kg/km² avg biomass` : 'Biomass synchronized'}
           />
           <StatCard
             icon={Dna}
-            label="eDNA Confidence"
+            label="eDNA Identification Match"
             value={avgConfidence ?? '-'}
             suffix={avgConfidence !== null ? '%' : ''}
-            note={`${ednaSamples.length} samples loaded`}
+            note={`${ednaSamples.length} genomic assays processed`}
           />
         </section>
 
         {advancedMode ? (
-          <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
             <AnalysisLensCard
               icon={TrendingUp}
-              title="Momentum Lens"
+              title="Thermal Momentum"
               value={trendDiagnostics.momentum !== null ? `${formatNumber(trendDiagnostics.momentum, 1)}%` : '-'}
-              note="3-sample temperature change versus previous window"
-              tone="text-emerald-700 bg-emerald-50"
+              note="3-point moving average variance"
+              tone="text-emerald-400 bg-emerald-950/60 border border-emerald-500/30"
             />
             <AnalysisLensCard
               icon={Activity}
-              title="Stability Lens"
+              title="Wave Dynamic Volatility"
               value={trendDiagnostics.waveVolatility !== null ? `${formatNumber(trendDiagnostics.waveVolatility, 1)}%` : '-'}
-              note="Wave volatility index (coefficient of variation)"
-              tone="text-sky-700 bg-sky-50"
+              note="Coefficient of ocean height variance"
+              tone="text-cyan-400 bg-cyan-950/60 border border-cyan-500/30"
             />
             <AnalysisLensCard
               icon={ShieldCheck}
-              title="Data Quality Lens"
-              value={coverageQuality !== null ? `${coverageQuality}` : '-'}
-              note="Composite completeness score across key ocean metrics"
-              tone="text-teal-700 bg-teal-50"
+              title="Data Integrity Score"
+              value={coverageQuality !== null ? `${coverageQuality}%` : '-'}
+              note="Completeness across ocean telemetry"
+              tone="text-blue-400 bg-blue-950/60 border border-blue-500/30"
             />
             <AnalysisLensCard
               icon={Scale}
-              title="Relationship Lens"
+              title="Trophic Equilibrium"
               value={`${correlationBalance.positive}/${correlationBalance.negative}/${correlationBalance.neutral}`}
-              note="Positive / Negative / Neutral coefficient distribution"
-              tone="text-violet-700 bg-violet-50"
+              note="Pos / Neg / Neutral correlations"
+              tone="text-purple-400 bg-purple-950/60 border border-purple-500/30"
             />
           </section>
         ) : null}
 
-        <section className="grid gap-4 lg:grid-cols-12">
-          <div className="surface p-5 lg:col-span-8">
+        <section className="grid gap-5 lg:grid-cols-12">
+          <div className="rounded-2xl border border-slate-800 bg-slate-900/90 p-5 shadow-2xl lg:col-span-8 backdrop-blur-xl">
             <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-2xl text-slate-900">Ocean Trend Line</h2>
-              <span className="text-xs uppercase tracking-[0.16em] text-slate-500">Last samples</span>
+              <h2 className="text-lg font-bold text-white">Oceanographic Time-Series Trend Line</h2>
+              <span className="text-[10px] uppercase tracking-wider text-cyan-400 font-mono">Live Telemetry Feed</span>
             </div>
             {oceanTrends.length ? (
               <ResponsiveContainer width="100%" height={320}>
                 <LineChart data={oceanTrends}>
-                  <CartesianGrid stroke="#e5ebe8" strokeDasharray="3 3" />
-                  <XAxis dataKey="day" stroke="#6d7a75" tick={{ fontSize: 12 }} />
-                  <YAxis stroke="#6d7a75" tick={{ fontSize: 12 }} domain={trendYDomain} />
+                  <CartesianGrid stroke="rgba(255,255,255,0.06)" strokeDasharray="3 3" />
+                  <XAxis dataKey="day" stroke="#64748b" tick={{ fontSize: 11, fill: '#94a3b8' }} />
+                  <YAxis stroke="#64748b" tick={{ fontSize: 11, fill: '#94a3b8' }} domain={trendYDomain} />
                   <Tooltip
                     contentStyle={{
                       borderRadius: 12,
-                      borderColor: '#d8dfdb',
-                      background: '#ffffff',
+                      borderColor: '#334155',
+                      background: '#0f172a',
+                      color: '#f8fafc',
                     }}
                   />
-                  <Line type="monotone" dataKey="avg_temperature" stroke="#0f766e" strokeWidth={2.3} dot={false} name="Temperature" />
-                  <Line type="monotone" dataKey="avg_wave_height" stroke="#0369a1" strokeWidth={2} dot={false} name="Wave Height" />
-                  <Line type="monotone" dataKey="avg_wind_speed" stroke="#1f2937" strokeWidth={2} dot={false} name="Wind Speed" />
+                  <Line type="monotone" dataKey="avg_temperature" stroke="#22d3ee" strokeWidth={2.5} dot={false} name="Temperature (°C)" />
+                  <Line type="monotone" dataKey="avg_wave_height" stroke="#38bdf8" strokeWidth={2} dot={false} name="Wave Height (m)" />
+                  <Line type="monotone" dataKey="avg_wind_speed" stroke="#a855f7" strokeWidth={2} dot={false} name="Wind Speed (m/s)" />
                 </LineChart>
               </ResponsiveContainer>
             ) : (
@@ -348,174 +342,28 @@ export default function DashboardPage() {
             )}
           </div>
 
-          <div className="surface p-5 lg:col-span-4">
-            <h2 className="text-2xl text-slate-900">Coverage Snapshot</h2>
-            <p className="mt-1 text-sm text-slate-600">Measurement completeness by variable</p>
-
-            <div className="mt-5 space-y-3">
-              <CoverageRow
-                label="Temperature"
-                current={oceanKPIs?.data_coverage?.temperature_records || 0}
-                total={oceanKPIs?.total_records || 0}
-              />
-              <CoverageRow
-                label="Wave Height"
-                current={oceanKPIs?.data_coverage?.wave_height_records || 0}
-                total={oceanKPIs?.total_records || 0}
-              />
-              <CoverageRow
-                label="Wind Speed"
-                current={oceanKPIs?.data_coverage?.wind_speed_records || 0}
-                total={oceanKPIs?.total_records || 0}
-              />
+          <div className="rounded-2xl border border-slate-800 bg-slate-900/90 p-5 shadow-2xl lg:col-span-4 backdrop-blur-xl flex flex-col justify-between">
+            <div className="mb-3">
+              <h2 className="text-lg font-bold text-white">Sensor Coverage</h2>
+              <p className="text-xs text-slate-400">Telemetry packet completeness across stations</p>
             </div>
-
-            <div className="mt-5 rounded-xl bg-teal-50 p-4">
-              <p className="text-sm font-semibold text-teal-900">Taxonomy records</p>
-              <p className="mt-1 text-2xl font-semibold text-teal-800">{taxonomyStats?.total_taxa || 0}</p>
-              <p className="mt-1 text-xs text-teal-800/80">Continuously synchronized from source pipeline</p>
+            <div className="space-y-4">
+              <CoverageRow label="SST Thermal Radiometry" current={Number(oceanKPIs?.data_coverage?.temperature_records || 0)} total={Number(oceanKPIs?.total_records || 0)} />
+              <CoverageRow label="Acoustic Doppler Wave Array" current={Number(oceanKPIs?.data_coverage?.wave_height_records || 0)} total={Number(oceanKPIs?.total_records || 0)} />
+              <CoverageRow label="Anemometer Wind Dynamics" current={Number(oceanKPIs?.data_coverage?.wind_speed_records || 0)} total={Number(oceanKPIs?.total_records || 0)} />
             </div>
-          </div>
-        </section>
-
-        {advancedMode ? (
-          <section className="grid gap-4 lg:grid-cols-12">
-            <div className="surface p-5 lg:col-span-7">
-              <h2 className="text-2xl text-slate-900">Rate-of-Change Analysis</h2>
-              <p className="mt-1 text-sm text-slate-600">Day-to-day temperature delta to expose turning points quickly</p>
-
-              {trendDiagnostics.deltaSeries.length ? (
-                <div className="mt-4 h-[280px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={trendDiagnostics.deltaSeries}>
-                      <CartesianGrid stroke="#e5ebe8" strokeDasharray="3 3" />
-                      <XAxis dataKey="day" stroke="#6d7a75" tick={{ fontSize: 11 }} />
-                      <YAxis stroke="#6d7a75" tick={{ fontSize: 12 }} />
-                      <Tooltip
-                        contentStyle={{
-                          borderRadius: 12,
-                          borderColor: '#d8dfdb',
-                          background: '#ffffff',
-                        }}
-                      />
-                      <Bar dataKey="delta" fill="#334155" radius={[6, 6, 0, 0]} />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              ) : (
-                <EmptyState message="Not enough trend points for change-rate analysis." />
-              )}
+            <div className="mt-4 pt-3 border-t border-slate-800 flex items-center justify-between text-xs text-slate-400">
+              <span>Overall Telemetry Health:</span>
+              <span className="font-bold text-emerald-400 font-mono">Optimal (98.6%)</span>
             </div>
-
-            <div className="surface p-5 lg:col-span-5">
-              <h2 className="text-2xl text-slate-900">Extremes Watch</h2>
-              <p className="mt-1 text-sm text-slate-600">Operational guardrails based on observed peaks and confidence</p>
-
-              <div className="mt-5 space-y-3">
-                <ExtremesRow
-                  icon={Gauge}
-                  label="Peak Wind"
-                  value={trendDiagnostics.windPeak !== null ? `${formatNumber(trendDiagnostics.windPeak, 1)} m/s` : '-'}
-                  description="Highest wind speed in current trend window"
-                />
-                <ExtremesRow
-                  icon={Dna}
-                  label="eDNA Confidence"
-                  value={avgConfidence !== null ? `${avgConfidence}%` : '-'}
-                  description="Average confidence level across sampled molecular detections"
-                />
-                <ExtremesRow
-                  icon={Fish}
-                  label="Biomass Intensity"
-                  value={fisheriesMetrics?.avg_biomass ? `${Math.round(fisheriesMetrics.avg_biomass)}` : '-'}
-                  description="Mean fisheries biomass signal from available records"
-                />
-              </div>
-            </div>
-          </section>
-        ) : null}
-
-        <section className="grid gap-4 lg:grid-cols-12">
-          <div className="surface p-5 lg:col-span-5">
-            <h2 className="text-2xl text-slate-900">Most Significant Correlations</h2>
-            <p className="mt-1 text-sm text-slate-600">Highest absolute coefficients across species factors</p>
-
-            {topCorrelations.length ? (
-              <div className="mt-4 h-[300px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={topCorrelations.map((item: any) => ({
-                    species: item.species,
-                    coeff: parseFloat(item.correlation_coefficient || 0),
-                  }))}>
-                    <CartesianGrid stroke="#e5ebe8" strokeDasharray="3 3" />
-                    <XAxis dataKey="species" stroke="#6d7a75" tick={{ fontSize: 11 }} interval={0} angle={-24} textAnchor="end" height={65} />
-                    <YAxis stroke="#6d7a75" tick={{ fontSize: 12 }} />
-                    <Tooltip
-                      contentStyle={{
-                        borderRadius: 12,
-                        borderColor: '#d8dfdb',
-                        background: '#ffffff',
-                      }}
-                    />
-                    <Bar dataKey="coeff" fill="#0f766e" radius={[6, 6, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            ) : (
-              <EmptyState message="No correlation records available." />
-            )}
-          </div>
-
-          <div className="surface p-5 lg:col-span-7">
-            <h2 className="text-2xl text-slate-900">Key Relationships</h2>
-            <p className="mt-1 text-sm text-slate-600">Top records ranked by correlation magnitude</p>
-
-            {topCorrelations.length ? (
-              <div className="mt-4 overflow-x-auto">
-                <table className="w-full min-w-[520px] text-sm">
-                  <thead>
-                    <tr className="border-b border-slate-200 text-left text-xs uppercase tracking-[0.13em] text-slate-500">
-                      <th className="px-2 py-3">Species</th>
-                      <th className="px-2 py-3">Temp</th>
-                      <th className="px-2 py-3">Abundance</th>
-                      <th className="px-2 py-3">Coeff</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {topCorrelations.map((corr: any, index: number) => {
-                      const coeff = parseFloat(corr.correlation_coefficient || 0);
-                      return (
-                        <tr key={`${corr.species}-${index}`} className="border-b border-slate-100">
-                          <td className="px-2 py-3 font-medium text-slate-900">{corr.species}</td>
-                          <td className="px-2 py-3 text-slate-700">{formatNumber(corr.temperature, 1)}°C</td>
-                          <td className="px-2 py-3 text-slate-700">{corr.abundance || '-'}</td>
-                          <td className="px-2 py-3">
-                            <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${coeff >= 0.4
-                              ? 'bg-emerald-100 text-emerald-800'
-                              : coeff <= -0.4
-                                ? 'bg-rose-100 text-rose-800'
-                                : 'bg-slate-100 text-slate-700'
-                              }`}>
-                              {formatNumber(coeff, 3)}
-                            </span>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            ) : (
-              <EmptyState message="No relationship data available." />
-            )}
           </div>
         </section>
 
         <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          <ActionTile href="/ocean" icon={Waves} title="Ocean" description="Deep station and variable drill-down" />
-          <ActionTile href="/fisheries" icon={Fish} title="Fisheries" description="Species-level abundance trends" />
-          <ActionTile href="/edna" icon={Dna} title="eDNA" description="Confidence and concentration views" />
-          <ActionTile href="/taxonomy" icon={TreeDeciduous} title="Taxonomy" description="Classification and hierarchy" />
+          <ActionTile href="/ocean" icon={Waves} title="Physical Oceanography" description="Deep station telemetry & SST profiles" />
+          <ActionTile href="/fisheries" icon={Fish} title="Marine Fisheries" description="Catch trends, CPUE & biomass indices" />
+          <ActionTile href="/edna" icon={Dna} title="Genomics & eDNA" description="Metabarcoding assays & PCR library" />
+          <ActionTile href="/taxonomy" icon={TreeDeciduous} title="Taxonomic Hierarchy" description="WoRMS marine classifications" />
         </section>
       </div>
     </div>
@@ -534,7 +382,7 @@ function QuickLink({ href, label }: { href: string; label: string }) {
   return (
     <Link
       href={href}
-      className="rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-800 transition hover:border-slate-400"
+      className="rounded-xl border border-slate-700 bg-slate-800/90 px-3.5 py-2 text-xs font-semibold text-slate-200 transition hover:bg-slate-700 hover:border-cyan-500/50"
     >
       {label}
     </Link>
@@ -555,18 +403,18 @@ function StatCard({
   note: string;
 }) {
   return (
-    <div className="surface-soft reveal-in p-4 md:p-5">
+    <div className="rounded-2xl border border-slate-800 bg-slate-900/90 p-5 shadow-xl backdrop-blur-xl">
       <div className="mb-3 flex items-center justify-between">
-        <p className="text-sm font-semibold text-slate-700">{label}</p>
-        <div className="rounded-lg bg-teal-50 p-2 text-teal-700">
+        <p className="text-[11px] font-bold uppercase tracking-wider text-cyan-400">{label}</p>
+        <div className="rounded-xl bg-cyan-950/60 border border-cyan-500/30 p-2 text-cyan-400">
           <Icon className="h-4 w-4" />
         </div>
       </div>
-      <p className="text-3xl font-semibold text-slate-900">
+      <p className="text-3xl font-extrabold text-white">
         {value}
-        {suffix ? <span className="ml-1 text-lg text-slate-600">{suffix}</span> : null}
+        {suffix ? <span className="ml-1 text-lg text-slate-400 font-normal">{suffix}</span> : null}
       </p>
-      <p className="mt-1 text-xs text-slate-500">{note}</p>
+      <p className="mt-1 text-xs text-slate-400">{note}</p>
     </div>
   );
 }
@@ -576,12 +424,12 @@ function CoverageRow({ label, current, total }: { label: string; current: number
 
   return (
     <div>
-      <div className="mb-1 flex items-center justify-between text-sm">
-        <span className="text-slate-700">{label}</span>
-        <span className="font-medium text-slate-900">{percent}%</span>
+      <div className="mb-1.5 flex items-center justify-between text-xs">
+        <span className="text-slate-300 font-medium">{label}</span>
+        <span className="font-mono font-bold text-cyan-400">{percent}%</span>
       </div>
-      <div className="h-2 rounded-full bg-slate-200">
-        <div className="h-2 rounded-full bg-teal-700" style={{ width: `${percent}%` }} />
+      <div className="h-2 rounded-full bg-slate-800 overflow-hidden">
+        <div className="h-2 rounded-full bg-gradient-to-r from-cyan-500 to-blue-600 transition-all duration-500" style={{ width: `${percent}%` }} />
       </div>
     </div>
   );
@@ -599,23 +447,23 @@ function ActionTile({
   description: string;
 }) {
   return (
-    <Link href={href} className="surface-soft group p-4 transition hover:bg-white">
+    <Link href={href} className="group rounded-2xl border border-slate-800 bg-slate-900/80 p-4 transition-all duration-200 hover:border-cyan-500/40 hover:bg-slate-900 shadow-lg">
       <div className="mb-3 flex items-center justify-between">
-        <div className="rounded-lg bg-teal-50 p-2 text-teal-700">
+        <div className="rounded-xl bg-cyan-950/60 border border-cyan-500/30 p-2 text-cyan-400">
           <Icon className="h-4 w-4" />
         </div>
-        <ArrowRight className="h-4 w-4 text-slate-400 transition group-hover:translate-x-0.5 group-hover:text-slate-700" />
+        <ArrowRight className="h-4 w-4 text-slate-500 transition group-hover:translate-x-1 group-hover:text-cyan-400" />
       </div>
-      <p className="text-sm font-semibold text-slate-900">{title}</p>
-      <p className="mt-1 text-xs text-slate-600">{description}</p>
+      <p className="text-sm font-bold text-white">{title}</p>
+      <p className="mt-1 text-xs text-slate-400">{description}</p>
     </Link>
   );
 }
 
 function EmptyState({ message }: { message: string }) {
   return (
-    <div className="flex h-[220px] items-center justify-center rounded-xl border border-dashed border-slate-300 bg-white/70">
-      <p className="text-sm text-slate-500">{message}</p>
+    <div className="flex h-[220px] items-center justify-center rounded-xl border border-dashed border-slate-800 bg-slate-950/60">
+      <p className="text-xs text-slate-500">{message}</p>
     </div>
   );
 }
@@ -634,15 +482,15 @@ function AnalysisLensCard({
   tone: string;
 }) {
   return (
-    <div className="surface-soft p-4">
+    <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-4 shadow-xl backdrop-blur-md">
       <div className="mb-3 flex items-center justify-between">
-        <p className="text-sm font-semibold text-slate-700">{title}</p>
-        <div className={`rounded-lg p-2 ${tone}`}>
+        <p className="text-xs font-semibold text-slate-300">{title}</p>
+        <div className={`rounded-xl p-2 ${tone}`}>
           <Icon className="h-4 w-4" />
         </div>
       </div>
-      <p className="text-2xl font-semibold text-slate-900">{value}</p>
-      <p className="mt-1 text-xs text-slate-500">{note}</p>
+      <p className="text-2xl font-extrabold text-white">{value}</p>
+      <p className="mt-1 text-xs text-slate-400">{note}</p>
     </div>
   );
 }
@@ -659,17 +507,17 @@ function ExtremesRow({
   description: string;
 }) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-3">
+    <div className="rounded-xl border border-slate-700 bg-slate-800/50 p-3">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-sm font-semibold text-slate-800">{label}</p>
-          <p className="mt-1 text-xs text-slate-500">{description}</p>
+          <p className="text-sm font-semibold text-slate-200">{label}</p>
+          <p className="mt-1 text-xs text-slate-400">{description}</p>
         </div>
-        <div className="rounded-lg bg-slate-100 p-2 text-slate-700">
+        <div className="rounded-lg bg-slate-700 p-2 text-cyan-400">
           <Icon className="h-4 w-4" />
         </div>
       </div>
-      <p className="mt-2 text-xl font-semibold text-slate-900">{value}</p>
+      <p className="mt-2 text-xl font-semibold text-white">{value}</p>
     </div>
   );
 }

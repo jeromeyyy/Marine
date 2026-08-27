@@ -23,6 +23,8 @@ interface MarkerData {
   popup?: string;
 }
 
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+
 export default function DynamicMarineMap() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -44,7 +46,7 @@ export default function DynamicMarineMap() {
 
       if (selectedDataType === 'species') {
         // Load species locations (Indian species)
-        const res = await axios.get('http://localhost:3001/api/species-locations');
+        const res = await axios.get(`${API_BASE}/api/species-locations`);
         if (res.data.success && res.data.data && res.data.data.species) {
           // Flatten all species locations - limit to first 500 for performance
           data = res.data.data.species.slice(0, 100).flatMap((sp: any) =>
@@ -63,7 +65,7 @@ export default function DynamicMarineMap() {
         }
       } else if (selectedDataType === 'fisheries') {
         // Load fisheries data
-        const res = await axios.get('http://localhost:3001/api/fisheries/geospatial');
+        const res = await axios.get(`${API_BASE}/api/fisheries/geospatial`);
         if (res.data.success && res.data.data) {
           data = res.data.data.map((item: any, idx: number) => ({
             id: `fish-${idx}`,
@@ -79,7 +81,7 @@ export default function DynamicMarineMap() {
         }
       } else if (selectedDataType === 'edna') {
         // Load eDNA data
-        const res = await axios.get('http://localhost:3001/api/edna');
+        const res = await axios.get(`${API_BASE}/api/edna`);
         if (res.data.success && res.data.data) {
           data = res.data.data.map((item: any, idx: number) => ({
             id: `edna-${idx}`,

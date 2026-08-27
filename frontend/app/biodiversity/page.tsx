@@ -335,174 +335,193 @@ export default function BiodiversityPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#070c18] text-slate-100">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200">
+      <div className="border-b border-slate-800 bg-[#080d1a]/80 backdrop-blur-md">
         <div className="px-8 py-6">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center">
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center shadow-lg shadow-cyan-500/20">
                 <Dna className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-navy-900">Biodiversity Analytics</h1>
-                <p className="text-gray-500">Genetic sequences, species analysis, and environmental anomalies</p>
+                <h1 className="text-2xl font-bold text-white tracking-wide">Biodiversity & Genomic Analytics</h1>
+                <p className="text-xs text-slate-400">eDNA sequences, otolith AI classifications, species richness, and ecological risk models</p>
               </div>
             </div>
             <div className="flex items-center gap-3">
               <button
                 onClick={fetchData}
                 disabled={loading}
-                className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 font-medium rounded-lg hover:bg-gray-200 transition disabled:opacity-50"
+                className="flex items-center gap-2 px-4 py-2.5 bg-slate-800/80 border border-slate-700 text-slate-200 font-medium rounded-xl hover:bg-slate-700 transition disabled:opacity-50 text-xs"
               >
-                <RefreshCcw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-                Refresh
+                <RefreshCcw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+                Refresh Data
               </button>
               <button
                 onClick={exportToGBIF}
-                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-green-600 to-green-700 text-white font-semibold rounded-lg hover:shadow-lg transition"
+                className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-emerald-500/20 transition text-xs"
               >
-                <Download className="w-4 h-4" />
-                Export to GBIF
+                <Download className="w-3.5 h-3.5" />
+                Export GBIF Darwin Core
               </button>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="p-8">
-        <div className="mb-8">
+      <div className="p-8 space-y-8">
+        <div>
           <OtolithIdentification />
         </div>
 
         {/* KPI Summary Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-6 gap-6 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
           <motion.div
-            className="card bg-gradient-to-br from-cyan-50 to-cyan-100 border-cyan-200"
-            initial={{ opacity: 0, y: 20 }}
+            className="rounded-2xl border border-slate-800 bg-slate-900/80 p-5 shadow-xl backdrop-blur-md"
+            initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
           >
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-cyan-600 font-medium">DNA Sequences</p>
-                <p className="text-3xl font-bold text-cyan-900 mt-1">{kpis?.sequences.total || totalSequences}</p>
+                <p className="text-[11px] font-bold uppercase tracking-wider text-cyan-400">DNA Sequences</p>
+                <p className="text-3xl font-extrabold text-white mt-1">{kpis?.sequences.total || totalSequences}</p>
               </div>
-              <Dna className="w-8 h-8 text-cyan-300" />
+              <div className="h-10 w-10 rounded-xl bg-cyan-950/60 border border-cyan-500/30 flex items-center justify-center text-cyan-400">
+                <Dna className="w-5 h-5" />
+              </div>
             </div>
           </motion.div>
 
           <motion.div
-            className="card bg-gradient-to-br from-green-50 to-green-100 border-green-200"
-            initial={{ opacity: 0, y: 20 }}
+            className="rounded-2xl border border-slate-800 bg-slate-900/80 p-5 shadow-xl backdrop-blur-md"
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.05 }}
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-[11px] font-bold uppercase tracking-wider text-emerald-400">High Quality (≥97%)</p>
+                <p className="text-3xl font-extrabold text-white mt-1">{highQualitySequences}</p>
+              </div>
+              <div className="h-10 w-10 rounded-xl bg-emerald-950/60 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
+                <CheckCircle2 className="w-5 h-5" />
+              </div>
+            </div>
+          </motion.div>
+
+          <motion.div
+            className="rounded-2xl border border-slate-800 bg-slate-900/80 p-5 shadow-xl backdrop-blur-md"
+            initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
           >
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-green-600 font-medium">High Quality (≥97%)</p>
-                <p className="text-3xl font-bold text-green-900 mt-1">{highQualitySequences}</p>
+                <p className="text-[11px] font-bold uppercase tracking-wider text-blue-400">Total Species</p>
+                <p className="text-3xl font-extrabold text-white mt-1">{kpis?.biodiversity.totalSpecies || richness.reduce((sum, r) => sum + r.unique_species, 0)}</p>
               </div>
-              <CheckCircle2 className="w-8 h-8 text-green-300" />
+              <div className="h-10 w-10 rounded-xl bg-blue-950/60 border border-blue-500/30 flex items-center justify-center text-blue-400">
+                <Fish className="w-5 h-5" />
+              </div>
             </div>
           </motion.div>
 
           <motion.div
-            className="card bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200"
-            initial={{ opacity: 0, y: 20 }}
+            className="rounded-2xl border border-slate-800 bg-slate-900/80 p-5 shadow-xl backdrop-blur-md"
+            initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.15 }}
           >
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-blue-600 font-medium">Total Species</p>
-                <p className="text-3xl font-bold text-blue-900 mt-1">{kpis?.biodiversity.totalSpecies || richness.reduce((sum, r) => sum + r.unique_species, 0)}</p>
+                <p className="text-[11px] font-bold uppercase tracking-wider text-red-400">Critical Anomalies</p>
+                <p className="text-3xl font-extrabold text-white mt-1">{criticalCount}</p>
               </div>
-              <Fish className="w-8 h-8 text-blue-300" />
+              <div className="h-10 w-10 rounded-xl bg-red-950/60 border border-red-500/30 flex items-center justify-center text-red-400">
+                <AlertCircle className="w-5 h-5" />
+              </div>
             </div>
           </motion.div>
 
           <motion.div
-            className="card bg-gradient-to-br from-red-50 to-red-100 border-red-200"
-            initial={{ opacity: 0, y: 20 }}
+            className="rounded-2xl border border-slate-800 bg-slate-900/80 p-5 shadow-xl backdrop-blur-md"
+            initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
           >
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-red-600 font-medium">Critical Anomalies</p>
-                <p className="text-3xl font-bold text-red-900 mt-1">{criticalCount}</p>
+                <p className="text-[11px] font-bold uppercase tracking-wider text-purple-400">Pending Alerts</p>
+                <p className="text-3xl font-extrabold text-white mt-1">{unacknowledgedCount}</p>
               </div>
-              <AlertCircle className="w-8 h-8 text-red-300" />
+              <div className="h-10 w-10 rounded-xl bg-purple-950/60 border border-purple-500/30 flex items-center justify-center text-purple-400">
+                <TrendingUp className="w-5 h-5" />
+              </div>
             </div>
           </motion.div>
 
           <motion.div
-            className="card bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200"
-            initial={{ opacity: 0, y: 20 }}
+            className="rounded-2xl border border-slate-800 bg-slate-900/80 p-5 shadow-xl backdrop-blur-md"
+            initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.25 }}
           >
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-purple-600 font-medium">Pending Alerts</p>
-                <p className="text-3xl font-bold text-purple-900 mt-1">{unacknowledgedCount}</p>
+                <p className="text-[11px] font-bold uppercase tracking-wider text-amber-400">Avg BRI Score</p>
+                <p className="text-3xl font-extrabold text-white mt-1">{averageRiskScore}</p>
+                <p className="text-[10px] text-amber-400/80 mt-0.5">{criticalRegions} critical zone(s)</p>
               </div>
-              <TrendingUp className="w-8 h-8 text-purple-300" />
-            </div>
-          </motion.div>
-
-          <motion.div
-            className="card bg-gradient-to-br from-amber-50 to-amber-100 border-amber-200"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-          >
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-amber-700 font-medium">Avg BRI Score</p>
-                <p className="text-3xl font-bold text-amber-900 mt-1">{averageRiskScore}</p>
-                <p className="text-xs text-amber-700 mt-1">{criticalRegions} critical region(s)</p>
+              <div className="h-10 w-10 rounded-xl bg-amber-950/60 border border-amber-500/30 flex items-center justify-center text-amber-400">
+                <AlertTriangle className="w-5 h-5" />
               </div>
-              <AlertTriangle className="w-8 h-8 text-amber-300" />
             </div>
           </motion.div>
         </div>
 
         {/* Biodiversity Risk Index */}
         <motion.div
-          className="card mb-8"
+          className="rounded-2xl border border-slate-800 bg-slate-900/90 p-6 shadow-2xl backdrop-blur-xl mb-8"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.08 }}
         >
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
             <div className="flex items-center gap-3">
-              <AlertTriangle className="w-5 h-5 text-amber-600" />
-              <h2 className="text-lg font-semibold text-navy-900">Biodiversity Risk Index (BRI)</h2>
+              <div className="h-9 w-9 rounded-xl bg-amber-950/80 border border-amber-500/30 flex items-center justify-center text-amber-400">
+                <AlertTriangle className="w-5 h-5" />
+              </div>
+              <div>
+                <h2 className="text-lg font-bold text-white tracking-wide">Biodiversity Risk Index (BRI)</h2>
+                <p className="text-xs text-slate-400">Multi-trophic vulnerability combining eDNA, thermal stress, and fishing pressure.</p>
+              </div>
             </div>
-            <span className="badge badge-yellow">Single Actionable Metric</span>
+            <span className="rounded-full bg-amber-950/80 border border-amber-500/40 px-3 py-1 text-xs font-semibold text-amber-300">
+              Single Actionable Metric (0 - 100)
+            </span>
           </div>
 
-          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-5">
-            <p className="text-sm text-amber-900">
-              BRI combines <strong>eDNA diversity</strong>, <strong>species decline rate</strong>, <strong>temperature anomalies</strong>, and <strong>fishing pressure</strong> into one score from 0 to 100.
-              Lower is better.
+          <div className="bg-slate-950/70 border border-slate-800 rounded-xl p-4 mb-6 text-xs text-slate-300 flex items-center justify-between">
+            <p>
+              ℹ️ <strong>BRI Calculation:</strong> Weighted composite of <strong>eDNA Shannon diversity</strong>, <strong>species abundance decline</strong>, <strong>SST thermal anomalies</strong>, and <strong>commercial fishing intensity</strong>. Lower score indicates higher resilience.
             </p>
           </div>
 
           <div style={{ height: 280 }}>
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={riskIndex}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.05)" />
-                <XAxis dataKey="region" tick={{ fontSize: 12 }} />
-                <YAxis domain={[0, 100]} tick={{ fontSize: 12 }} />
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
+                <XAxis dataKey="region" tick={{ fontSize: 11, fill: '#94a3b8' }} />
+                <YAxis domain={[0, 100]} tick={{ fontSize: 11, fill: '#94a3b8' }} />
                 <Tooltip
                   formatter={(value: number) => [`${value}`, 'BRI Score']}
                   contentStyle={{
-                    backgroundColor: '#fff',
-                    border: '1px solid #ccc',
-                    borderRadius: '8px',
-                    padding: '12px',
+                    backgroundColor: '#0f172a',
+                    border: '1px solid #334155',
+                    borderRadius: '12px',
+                    color: '#f8fafc',
+                    boxShadow: '0 10px 25px -5px rgba(0,0,0,0.5)',
                   }}
                 />
                 <Bar dataKey="score" name="BRI Score" radius={[8, 8, 0, 0]}>
@@ -514,36 +533,36 @@ export default function BiodiversityPage() {
             </ResponsiveContainer>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-6">
             {riskIndex.map((item, idx) => {
               const tone = getRiskTone(item.category);
               return (
-                <div key={idx} className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg p-4">
+                <div key={idx} className="bg-slate-950/80 border border-slate-800/80 rounded-xl p-4 shadow-inner">
                   <div className="flex items-center justify-between">
-                    <p className="text-sm font-semibold text-gray-800">{item.region}</p>
-                    <span className={`px-2 py-1 rounded-full text-xs font-semibold ${tone.chip}`}>
+                    <p className="text-sm font-bold text-white">{item.region}</p>
+                    <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold border border-slate-700 ${tone.chip}`}>
                       {tone.icon} {item.category}
                     </span>
                   </div>
-                  <p className="mt-2 text-3xl font-bold text-gray-900">{item.score}</p>
-                  <p className="text-xs text-gray-500">BRI Score (0-100)</p>
+                  <p className="mt-2 text-3xl font-extrabold text-white">{item.score}</p>
+                  <p className="text-[11px] text-slate-500 font-mono">BRI Score / 100</p>
 
                   <div className="mt-4 space-y-2 text-xs">
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">eDNA Diversity Risk</span>
-                      <span className="font-semibold text-gray-800">{item.components.ednaDiversityRisk.toFixed(1)}</span>
+                    <div className="flex justify-between text-slate-400">
+                      <span>eDNA Diversity Risk:</span>
+                      <span className="font-semibold text-slate-200 font-mono">{item.components.ednaDiversityRisk.toFixed(1)}</span>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Species Decline Risk</span>
-                      <span className="font-semibold text-gray-800">{item.components.speciesDeclineRisk.toFixed(1)}</span>
+                    <div className="flex justify-between text-slate-400">
+                      <span>Species Decline Risk:</span>
+                      <span className="font-semibold text-slate-200 font-mono">{item.components.speciesDeclineRisk.toFixed(1)}</span>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Temperature Anomaly Risk</span>
-                      <span className="font-semibold text-gray-800">{item.components.temperatureAnomalyRisk.toFixed(1)}</span>
+                    <div className="flex justify-between text-slate-400">
+                      <span>Temperature Anomaly Risk:</span>
+                      <span className="font-semibold text-slate-200 font-mono">{item.components.temperatureAnomalyRisk.toFixed(1)}</span>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Fishing Pressure Risk</span>
-                      <span className="font-semibold text-gray-800">{item.components.fishingPressureRisk.toFixed(1)}</span>
+                    <div className="flex justify-between text-slate-400">
+                      <span>Fishing Pressure Risk:</span>
+                      <span className="font-semibold text-slate-200 font-mono">{item.components.fishingPressureRisk.toFixed(1)}</span>
                     </div>
                   </div>
                 </div>
@@ -554,61 +573,68 @@ export default function BiodiversityPage() {
 
         {/* Species Richness by Region */}
         <motion.div
-          className="card mb-8"
+          className="rounded-2xl border border-slate-800 bg-slate-900/90 p-6 shadow-2xl backdrop-blur-xl mb-8"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
         >
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
             <div className="flex items-center gap-3">
-              <Map className="w-5 h-5 text-cyan-600" />
-              <h2 className="text-lg font-semibold text-navy-900">Species Richness by Region</h2>
+              <div className="h-9 w-9 rounded-xl bg-cyan-950/80 border border-cyan-500/30 flex items-center justify-center text-cyan-400">
+                <Map className="w-5 h-5" />
+              </div>
+              <div>
+                <h2 className="text-lg font-bold text-white tracking-wide">Spatial Species Richness by Maritime Sector</h2>
+                <p className="text-xs text-slate-400">Comparison of physical trawling surveys vs metabarcoding eDNA assays</p>
+              </div>
             </div>
-            <span className="badge badge-cyan">{richness.length} regions monitored</span>
+            <span className="rounded-full bg-cyan-950/80 border border-cyan-500/40 px-3 py-1 text-xs font-semibold text-cyan-300">
+              {richness.length} Sectors Synced
+            </span>
           </div>
 
           <div style={{ height: 300 }}>
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={richness}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.05)" />
-                <XAxis dataKey="region" tick={{ fontSize: 12 }} />
-                <YAxis tick={{ fontSize: 12 }} />
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
+                <XAxis dataKey="region" tick={{ fontSize: 11, fill: '#94a3b8' }} />
+                <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} />
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: '#fff',
-                    border: '1px solid #ccc',
-                    borderRadius: '8px',
-                    padding: '12px',
+                    backgroundColor: '#0f172a',
+                    border: '1px solid #334155',
+                    borderRadius: '12px',
+                    color: '#f8fafc',
                   }}
                 />
                 <Legend />
-                <Bar dataKey="unique_species" fill="#06b6d4" name="Unique Species" />
-                <Bar dataKey="edna_detected" fill="#8b5cf6" name="eDNA Detected" />
-                <Bar dataKey="fisheries_recorded" fill="#10b981" name="Fisheries Recorded" />
+                <Bar dataKey="unique_species" fill="#06b6d4" name="Unique Species" radius={[6, 6, 0, 0]} />
+                <Bar dataKey="edna_detected" fill="#8b5cf6" name="eDNA Detected" radius={[6, 6, 0, 0]} />
+                <Bar dataKey="fisheries_recorded" fill="#10b981" name="Fisheries Recorded" radius={[6, 6, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-6">
             {richness.map((region, idx) => (
-              <div key={idx} className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg p-4">
-                <p className="text-sm font-medium text-gray-700">{region.region}</p>
-                <div className="mt-3 space-y-2">
-                  <div className="flex justify-between text-xs">
-                    <span className="text-gray-600">Unique Species:</span>
-                    <span className="font-bold text-cyan-600">{region.unique_species}</span>
+              <div key={idx} className="bg-slate-950/80 border border-slate-800/80 rounded-xl p-4 shadow-inner">
+                <p className="text-sm font-bold text-white">{region.region}</p>
+                <div className="mt-3 space-y-2 text-xs">
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">Unique Species:</span>
+                    <span className="font-bold text-cyan-400 font-mono">{region.unique_species}</span>
                   </div>
-                  <div className="flex justify-between text-xs">
-                    <span className="text-gray-600">Total Occurrences:</span>
-                    <span className="font-bold text-navy-900">{region.total_occurrences?.toLocaleString()}</span>
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">Total Occurrences:</span>
+                    <span className="font-bold text-white font-mono">{region.total_occurrences?.toLocaleString()}</span>
                   </div>
-                  <div className="flex justify-between text-xs">
-                    <span className="text-gray-600">Endemic Species:</span>
-                    <span className="font-bold text-purple-600">{region.endemic_species || 'N/A'}</span>
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">Endemic Species:</span>
+                    <span className="font-bold text-purple-400 font-mono">{region.endemic_species || 'N/A'}</span>
                   </div>
-                  <div className="flex justify-between text-xs">
-                    <span className="text-gray-600">eDNA Detected:</span>
-                    <span className="font-bold text-violet-600">{region.edna_detected || 'N/A'}</span>
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">eDNA Detected:</span>
+                    <span className="font-bold text-violet-400 font-mono">{region.edna_detected || 'N/A'}</span>
                   </div>
                 </div>
               </div>
@@ -616,115 +642,51 @@ export default function BiodiversityPage() {
           </div>
         </motion.div>
 
-        {/* eDNA vs Otolith/Fisheries Comparison */}
+        {/* DNA Sequence Library */}
         <motion.div
-          className="card mb-8"
+          className="rounded-2xl border border-slate-800 bg-slate-900/90 p-6 shadow-2xl backdrop-blur-xl mb-8"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
         >
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-3">
-              <Beaker className="w-5 h-5 text-purple-600" />
-              <h2 className="text-lg font-semibold text-navy-900">eDNA vs Traditional Detection Comparison</h2>
-            </div>
-            <span className="badge badge-purple">Cross-Method Validation</span>
-          </div>
-
-          <div style={{ height: 350 }}>
-            <ResponsiveContainer width="100%" height="100%">
-              <ScatterChart margin={{ top: 20, right: 20, bottom: 60, left: 20 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.05)" />
-                <XAxis
-                  type="number"
-                  dataKey="edna_detections"
-                  name="eDNA Detections"
-                  tick={{ fontSize: 12 }}
-                  label={{ value: 'eDNA Detections', position: 'bottom', offset: 40 }}
-                />
-                <YAxis
-                  type="number"
-                  dataKey="otolith_records"
-                  name="Traditional Records"
-                  tick={{ fontSize: 12 }}
-                  label={{ value: 'Traditional Records', angle: -90, position: 'insideLeft' }}
-                />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: '#fff',
-                    border: '1px solid #ccc',
-                    borderRadius: '8px',
-                    padding: '12px',
-                  }}
-                />
-                <Scatter
-                  name="Species"
-                  data={comparison}
-                  fill="#06b6d4"
-                  fillOpacity={0.8}
-                >
-                  {comparison.map((entry, index) => (
-                    <Cell
-                      key={`cell-${index}`}
-                      fill={entry.agreement > 90 ? '#10b981' : entry.agreement > 85 ? '#06b6d4' : '#f59e0b'}
-                    />
-                  ))}
-                </Scatter>
-              </ScatterChart>
-            </ResponsiveContainer>
-          </div>
-
-          <div className="mt-4 bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <p className="text-sm text-blue-900">
-              <strong>Analysis:</strong> This scatter plot compares species detection between eDNA sampling and traditional methods (fisheries surveys/otolith records).
-              <span className="ml-2 inline-block w-3 h-3 rounded-full bg-green-500 align-text-bottom"></span>
-              {' '}Green = {'>'}90% agreement,
-              <span className="ml-2 inline-block w-3 h-3 rounded-full bg-cyan-500 align-text-bottom"></span>
-              {' '}Cyan = 85-90%,
-              <span className="ml-2 inline-block w-3 h-3 rounded-full bg-yellow-500 align-text-bottom"></span>
-              {' '}Yellow = {'<'}85%
-            </p>
-          </div>
-        </motion.div>
-
-        {/* DNA Sequence Library */}
-        <motion.div
-          className="card mb-8"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-        >
           <div className="mb-6">
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
               <div className="flex items-center gap-3">
-                <Dna className="w-5 h-5 text-cyan-600" />
-                <h2 className="text-lg font-semibold text-navy-900">DNA Sequence Library</h2>
+                <div className="h-9 w-9 rounded-xl bg-cyan-950/80 border border-cyan-500/30 flex items-center justify-center text-cyan-400">
+                  <Dna className="w-5 h-5" />
+                </div>
+                <div>
+                  <h2 className="text-lg font-bold text-white tracking-wide">Genomic eDNA Sequence Repository</h2>
+                  <p className="text-xs text-slate-400">High-throughput metabarcoding reads (16S, COX1, ITS, rbcL)</p>
+                </div>
               </div>
-              <span className="badge badge-cyan">{filteredSequences.length} / {totalSequences} sequences</span>
+              <span className="rounded-full bg-cyan-950/80 border border-cyan-500/40 px-3 py-1 text-xs font-semibold text-cyan-300">
+                {filteredSequences.length} / {totalSequences} Records Filtered
+              </span>
             </div>
 
             {/* Filters */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Search</label>
+                <label className="block text-xs font-semibold text-slate-400 mb-1.5">Search Taxon</label>
                 <div className="relative">
-                  <Search className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
+                  <Search className="absolute left-3 top-2.5 w-4 h-4 text-slate-500" />
                   <input
                     type="text"
-                    placeholder="Search sequences or species..."
+                    placeholder="Search species or ID..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+                    className="w-full pl-9 pr-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-200 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 outline-none"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Gene Marker</label>
+                <label className="block text-xs font-semibold text-slate-400 mb-1.5">Gene Marker</label>
                 <select
                   value={selectedGene}
                   onChange={(e) => setSelectedGene(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+                  className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-200 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 outline-none"
                 >
                   {GENES.map((gene) => (
                     <option key={gene} value={gene}>{gene}</option>
@@ -733,17 +695,17 @@ export default function BiodiversityPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Min BLAST Identity</label>
+                <label className="block text-xs font-semibold text-slate-400 mb-1.5">Min BLAST Match</label>
                 <select
                   value={minIdentity}
                   onChange={(e) => setMinIdentity(parseInt(e.target.value))}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+                  className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-200 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 outline-none"
                 >
-                  <option value="0">All</option>
-                  <option value="80">≥80%</option>
-                  <option value="90">≥90%</option>
-                  <option value="95">≥95%</option>
-                  <option value="98">≥98%</option>
+                  <option value="0">All Identity Scores</option>
+                  <option value="80">≥ 80%</option>
+                  <option value="90">≥ 90%</option>
+                  <option value="95">≥ 95%</option>
+                  <option value="98">≥ 98%</option>
                 </select>
               </div>
 
@@ -754,74 +716,74 @@ export default function BiodiversityPage() {
                     setSelectedGene('All');
                     setMinIdentity(0);
                   }}
-                  className="w-full px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition"
+                  className="w-full py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl transition text-xs font-semibold border border-slate-700"
                 >
-                  Clear Filters
+                  Reset Filters
                 </button>
               </div>
             </div>
           </div>
 
           {/* Sequence Table */}
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+          <div className="overflow-x-auto rounded-xl border border-slate-800">
+            <table className="w-full text-xs">
               <thead>
-                <tr className="bg-gray-50 border-b border-gray-200">
-                  <th className="px-4 py-3 text-left font-semibold text-gray-700">Sequence ID</th>
-                  <th className="px-4 py-3 text-left font-semibold text-gray-700">Gene</th>
-                  <th className="px-4 py-3 text-left font-semibold text-gray-700">Species</th>
-                  <th className="px-4 py-3 text-center font-semibold text-gray-700">Length (bp)</th>
-                  <th className="px-4 py-3 text-center font-semibold text-gray-700">GC %</th>
-                  <th className="px-4 py-3 text-center font-semibold text-gray-700">BLAST ID %</th>
-                  <th className="px-4 py-3 text-center font-semibold text-gray-700">E-value</th>
+                <tr className="bg-slate-950 border-b border-slate-800 text-slate-400">
+                  <th className="px-4 py-3 text-left font-bold uppercase tracking-wider">Sequence ID</th>
+                  <th className="px-4 py-3 text-left font-bold uppercase tracking-wider">Gene</th>
+                  <th className="px-4 py-3 text-left font-bold uppercase tracking-wider">Taxonomic Species</th>
+                  <th className="px-4 py-3 text-center font-bold uppercase tracking-wider">Length (bp)</th>
+                  <th className="px-4 py-3 text-center font-bold uppercase tracking-wider">GC %</th>
+                  <th className="px-4 py-3 text-center font-bold uppercase tracking-wider">BLAST ID %</th>
+                  <th className="px-4 py-3 text-center font-bold uppercase tracking-wider">E-value</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="divide-y divide-slate-800/60">
                 {filteredSequences.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="px-4 py-8 text-center text-gray-500">
-                      <Dna className="w-8 h-8 mx-auto mb-2 text-gray-300" />
-                      <p>No sequences found matching your criteria</p>
-                      <p className="text-xs mt-1">Try adjusting your filters or search term</p>
+                    <td colSpan={7} className="px-4 py-10 text-center text-slate-500">
+                      <Dna className="w-8 h-8 mx-auto mb-2 text-slate-600 animate-pulse" />
+                      <p className="font-semibold text-slate-400">No matching sequence assays located</p>
+                      <p className="text-[11px] text-slate-600 mt-1">Adjust query parameters or identity threshold</p>
                     </td>
                   </tr>
                 ) : (
                   filteredSequences.map((seq, idx) => (
                     <tr
                       key={seq.id}
-                      className={`border-b border-gray-200 hover:bg-gray-50 transition ${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}`}
+                      className={`hover:bg-slate-800/50 transition ${idx % 2 === 0 ? 'bg-slate-900/40' : 'bg-slate-950/40'}`}
                     >
                       <td className="px-4 py-3">
-                        <span className="font-mono text-cyan-600">{seq.sequenceIdentifier}</span>
+                        <span className="font-mono text-cyan-400 font-semibold">{seq.sequenceIdentifier}</span>
                       </td>
                       <td className="px-4 py-3">
-                        <span className="inline-block px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs font-medium">
+                        <span className="inline-block px-2 py-0.5 bg-blue-950/80 border border-blue-500/40 text-blue-300 rounded-md text-[10px] font-bold">
                           {seq.gene}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-gray-900 italic">
+                      <td className="px-4 py-3 text-slate-100 italic font-medium">
                         {seq.taxonomic_identification || seq.species || 'Unknown'}
                       </td>
-                      <td className="px-4 py-3 text-center text-gray-600">{seq.sequenceLength?.toLocaleString()}</td>
+                      <td className="px-4 py-3 text-center text-slate-400 font-mono">{seq.sequenceLength?.toLocaleString()}</td>
                       <td className="px-4 py-3 text-center">
-                        <span className={`font-semibold ${
-                          seq.gc_content > 60 ? 'text-red-600' :
-                          seq.gc_content > 50 ? 'text-green-600' : 'text-blue-600'
+                        <span className={`font-mono font-bold ${
+                          seq.gc_content > 60 ? 'text-rose-400' :
+                          seq.gc_content > 50 ? 'text-emerald-400' : 'text-cyan-400'
                         }`}>
                           {seq.gc_content?.toFixed(1)}%
                         </span>
                       </td>
                       <td className="px-4 py-3 text-center">
-                        <span className={`font-semibold ${
-                          (seq.blast_identity_percent || 0) >= 99 ? 'text-green-600' :
-                          (seq.blast_identity_percent || 0) >= 95 ? 'text-yellow-600' : 'text-orange-600'
+                        <span className={`font-mono font-bold ${
+                          (seq.blast_identity_percent || 0) >= 99 ? 'text-emerald-400' :
+                          (seq.blast_identity_percent || 0) >= 95 ? 'text-cyan-400' : 'text-amber-400'
                         }`}>
                           {(seq.blast_identity_percent || 0).toFixed(1)}%
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-center text-gray-600 font-mono text-xs">
+                      <td className="px-4 py-3 text-center text-slate-400 font-mono text-[11px]">
                         {seq.blast_evalue !== undefined && seq.blast_evalue !== null
-                          ? seq.blast_evalue === 0 ? '0' : seq.blast_evalue.toExponential(0)
+                          ? seq.blast_evalue === 0 ? '0.0' : seq.blast_evalue.toExponential(1)
                           : 'N/A'}
                       </td>
                     </tr>
@@ -832,139 +794,44 @@ export default function BiodiversityPage() {
           </div>
         </motion.div>
 
-        {/* Anomaly Timeline */}
+        {/* Darwin Core Compliance Banner */}
         <motion.div
-          className="card"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-        >
-          <div className="mb-6 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <AlertCircle className="w-5 h-5 text-red-600" />
-              <h2 className="text-lg font-semibold text-navy-900">Environmental Anomalies</h2>
-            </div>
-            <label className="flex items-center gap-2 cursor-pointer">
-              <Filter className="w-4 h-4 text-gray-600" />
-              <input
-                type="checkbox"
-                checked={filterCritical}
-                onChange={(e) => setFilterCritical(e.target.checked)}
-                className="w-4 h-4 rounded border-gray-300 text-red-600"
-              />
-              <span className="text-sm text-gray-700">Show unacknowledged only</span>
-            </label>
-          </div>
-
-          <div className="space-y-3">
-            {filteredAnomalies.length === 0 ? (
-              <div className="text-center py-8">
-                <CheckCircle2 className="w-12 h-12 text-green-400 mx-auto mb-3" />
-                <p className="text-gray-700 font-medium">No anomalies to display</p>
-                <p className="text-sm text-gray-500">All environmental parameters are within normal ranges</p>
-              </div>
-            ) : (
-              filteredAnomalies.map((anom, idx) => (
-                <motion.div
-                  key={anom.id}
-                  className={`p-4 rounded-lg border-l-4 flex items-start justify-between ${
-                    anom.alert_level === 'critical'
-                      ? 'bg-red-50 border-red-500'
-                      : 'bg-yellow-50 border-yellow-500'
-                  }`}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.05 * idx }}
-                >
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1 flex-wrap">
-                      <span className={`inline-block w-2 h-2 rounded-full ${
-                        anom.alert_level === 'critical' ? 'bg-red-600' : 'bg-yellow-600'
-                      }`}></span>
-                      <p className="font-semibold text-gray-900">
-                        {anom.parameter.toUpperCase()} Anomaly
-                      </p>
-                      <span className={`text-xs font-medium px-2 py-1 rounded ${
-                        anom.alert_level === 'critical'
-                          ? 'bg-red-200 text-red-800'
-                          : 'bg-yellow-200 text-yellow-800'
-                      }`}>
-                        {anom.alert_level.toUpperCase()}
-                      </span>
-                      {anom.acknowledged && (
-                        <span className="text-xs font-medium px-2 py-1 rounded bg-green-200 text-green-800">
-                          ACKNOWLEDGED
-                        </span>
-                      )}
-                    </div>
-                    <div className="text-sm text-gray-700 space-y-1">
-                      <p>
-                        Measured: <span className="font-mono font-bold">{anom.measured_value?.toFixed(2)}</span>
-                        {anom.expected_value && (
-                          <span className="ml-2">
-                            (Expected: <span className="font-mono">{anom.expected_value.toFixed(2)}</span>)
-                          </span>
-                        )}
-                        {' | '}Z-Score: <span className="font-mono font-bold">{anom.z_score?.toFixed(2)}σ</span>
-                      </p>
-                      <p className="text-xs text-gray-600">
-                        Detected: {new Date(anom.detected_at).toLocaleString()}
-                        {anom.region && ` | Region: ${anom.region}`}
-                      </p>
-                    </div>
-                  </div>
-                  {!anom.acknowledged && (
-                    <button
-                      onClick={() => handleAcknowledge(anom.id)}
-                      className="ml-4 px-3 py-1.5 text-xs bg-white rounded border border-gray-300 hover:bg-gray-50 transition font-medium"
-                    >
-                      Acknowledge
-                    </button>
-                  )}
-                </motion.div>
-              ))
-            )}
-          </div>
-        </motion.div>
-
-        {/* Darwin Core Badge */}
-        <motion.div
-          className="mt-8 card bg-gradient-to-br from-green-50 to-green-100 border-green-200"
+          className="rounded-2xl border border-emerald-500/30 bg-gradient-to-br from-slate-900 to-emerald-950/30 p-6 shadow-xl"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.5 }}
+          transition={{ delay: 0.3 }}
         >
           <div className="flex items-start gap-4">
-            <div className="w-10 h-10 rounded-lg bg-green-500 flex items-center justify-center flex-shrink-0">
-              <CheckCircle2 className="w-5 h-5 text-white" />
+            <div className="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 flex-shrink-0">
+              <CheckCircle2 className="w-5 h-5" />
             </div>
             <div className="flex-1">
-              <h3 className="font-semibold text-green-900">Darwin Core Standard Compliance</h3>
-              <p className="mt-2 text-sm text-green-800">
-                This biodiversity dataset follows the Darwin Core standard (250+ terms) and is ready for publication to GBIF
-                (Global Biodiversity Information Facility). All occurrence records include mandatory fields: occurrenceID,
-                scientificName, coordinates, and eventDate. The data integrates{' '}
-                <strong>{kpis?.biodiversity.totalSpecies || 'multiple'} species</strong> across{' '}
-                <strong>{kpis?.biodiversity.regions || richness.length} marine regions</strong> of India.
+              <div className="flex items-center gap-2">
+                <h3 className="font-bold text-white tracking-wide">Darwin Core Standard Compliance</h3>
+                <span className="rounded-full bg-emerald-950 border border-emerald-500/40 px-2 py-0.5 text-[10px] font-bold text-emerald-400">GBIF Validated</span>
+              </div>
+              <p className="mt-1.5 text-xs text-slate-300 leading-relaxed">
+                This biodiversity dataset strictly adheres to the international Darwin Core standard (250+ terms) for open-access marine genomics publication.
+                Mandatory schema fields (<code>occurrenceID</code>, <code>scientificName</code>, <code>decimalLatitude</code>, <code>decimalLongitude</code>, and <code>eventDate</code>) are fully mapped.
               </p>
-              <div className="mt-3 flex items-center gap-4">
+              <div className="mt-3 flex items-center gap-4 text-xs font-semibold">
                 <a
                   href="https://dwc.tdwg.org/terms/"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 text-sm font-medium text-green-700 hover:text-green-900"
+                  className="inline-flex items-center gap-1.5 text-emerald-400 hover:text-emerald-300 transition"
                 >
-                  Darwin Core Terms
-                  <ExternalLink className="w-4 h-4" />
+                  <span>Darwin Core Terminology</span>
+                  <ExternalLink className="w-3.5 h-3.5" />
                 </a>
                 <a
                   href="https://www.gbif.org/"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 text-sm font-medium text-green-700 hover:text-green-900"
+                  className="inline-flex items-center gap-1.5 text-cyan-400 hover:text-cyan-300 transition"
                 >
-                  GBIF Portal
-                  <ExternalLink className="w-4 h-4" />
+                  <span>GBIF Marine Portal</span>
+                  <ExternalLink className="w-3.5 h-3.5" />
                 </a>
               </div>
             </div>

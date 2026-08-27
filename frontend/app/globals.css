@@ -3,13 +3,13 @@
 @tailwind utilities;
 
 :root {
-  --bg: #f5f6f4;
-  --bg-elevated: #fcfcfb;
-  --text: #1b2523;
-  --muted: #5e6b66;
-  --line: #d8dfdb;
-  --accent: #0f766e;
-  --accent-soft: #dff4ef;
+  --bg: #070c18;
+  --bg-elevated: #0f172a;
+  --text: #f8fafc;
+  --muted: #94a3b8;
+  --line: #1e293b;
+  --accent: #06b6d4;
+  --accent-soft: rgba(6, 182, 212, 0.15);
 }
 
 @layer base {
@@ -24,25 +24,28 @@
     overflow-x: hidden;
     margin: 0;
     padding: 0;
+    background-color: #070c18;
+    color: #f8fafc;
   }
 
   body {
     @apply antialiased overflow-x-hidden;
-    font-family: var(--font-manrope), 'Segoe UI', sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
     color: var(--text);
     background:
-      radial-gradient(90rem 40rem at -10% -20%, #edf5f2 0%, rgba(237, 245, 242, 0) 70%),
-      radial-gradient(70rem 28rem at 110% 10%, #eef5fb 0%, rgba(238, 245, 251, 0) 72%),
-      var(--bg);
+      radial-gradient(90rem 40rem at 10% -20%, rgba(6, 182, 212, 0.08) 0%, rgba(7, 12, 24, 0) 70%),
+      radial-gradient(70rem 28rem at 90% 10%, rgba(59, 130, 246, 0.08) 0%, rgba(7, 12, 24, 0) 72%),
+      #070c18;
     margin: 0;
     padding: 0;
     min-height: 100vh;
     width: 100%;
   }
 
-  h1, h2, h3 {
-    font-family: var(--font-fraunces), Georgia, serif;
-    letter-spacing: -0.02em;
+  h1, h2, h3, h4, h5, h6 {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    letter-spacing: -0.015em;
+    font-weight: 700;
   }
 
   a {
@@ -52,82 +55,75 @@
 
 @layer components {
   .surface {
-    background: rgba(252, 252, 251, 0.92);
-    border: 1px solid var(--line);
-    box-shadow: 0 10px 30px rgba(20, 30, 28, 0.05);
+    background: rgba(15, 23, 42, 0.85);
+    border: 1px solid rgba(51, 65, 85, 0.6);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
     border-radius: 18px;
+    backdrop-filter: blur(16px);
   }
 
   .surface-soft {
-    background: rgba(252, 252, 251, 0.65);
-    border: 1px solid rgba(216, 223, 219, 0.75);
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(51, 65, 85, 0.5);
     border-radius: 16px;
+    backdrop-filter: blur(12px);
   }
 
   .eyebrow {
-    @apply uppercase tracking-[0.2em] text-xs font-semibold;
-    color: #507167;
+    @apply uppercase tracking-[0.2em] text-[10px] font-bold text-cyan-400;
   }
 
   .muted {
     color: var(--muted);
   }
 
-  .reveal-in {
-    animation: revealIn 700ms cubic-bezier(0.22, 1, 0.36, 1) both;
-  }
-
-  .reveal-in-delay {
-    animation: revealIn 950ms cubic-bezier(0.22, 1, 0.36, 1) both;
-  }
-
   /* Card Styles */
   .card {
-    @apply bg-white rounded-xl shadow-md p-6 border border-gray-100 transition-all duration-300;
+    @apply bg-slate-900/80 rounded-2xl shadow-xl p-6 border border-slate-800 backdrop-blur-xl text-slate-100 transition-all duration-300;
   }
 
   .card:hover {
-    @apply shadow-lg border-gray-200;
+    @apply border-slate-700 shadow-2xl;
   }
 
   .card-dark {
-    @apply bg-navy-800 rounded-xl shadow-lg p-6 border border-navy-700 text-white;
+    @apply bg-slate-950/90 rounded-2xl shadow-2xl p-6 border border-slate-800 text-white backdrop-blur-xl;
   }
 
   .card-gradient {
-    @apply rounded-xl shadow-lg p-6 text-white;
-    background: linear-gradient(135deg, #0c4a6e 0%, #0369a1 100%);
+    @apply rounded-2xl shadow-xl p-6 text-white border border-cyan-500/20;
+    background: linear-gradient(135deg, rgba(8, 51, 68, 0.8) 0%, rgba(15, 23, 42, 0.95) 100%);
   }
 
   /* Glass morphism card */
   .card-glass {
-    @apply rounded-xl p-6 text-white backdrop-blur-md;
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    @apply rounded-2xl p-6 text-white backdrop-blur-xl;
+    background: rgba(15, 23, 42, 0.75);
+    border: 1px solid rgba(51, 65, 85, 0.6);
   }
 
   /* Button Styles */
   .btn-primary {
-    @apply bg-marine-600 text-white px-6 py-2.5 rounded-lg hover:bg-marine-700
-           transition-all duration-300 font-medium shadow-md hover:shadow-lg
-           active:scale-95;
+    @apply bg-gradient-to-r from-cyan-500 to-blue-600 text-white px-5 py-2.5 rounded-xl hover:brightness-110
+           transition-all duration-200 font-semibold shadow-lg shadow-cyan-500/20
+           active:scale-95 text-sm;
   }
 
   .btn-secondary {
-    @apply bg-white text-navy-800 px-6 py-2.5 rounded-lg hover:bg-gray-50
-           transition-all duration-300 font-medium border border-gray-200
-           shadow-sm hover:shadow-md active:scale-95;
+    @apply bg-slate-800 text-slate-200 px-5 py-2.5 rounded-xl hover:bg-slate-700
+           transition-all duration-200 font-medium border border-slate-700
+           shadow-sm active:scale-95 text-sm;
   }
 
   .btn-outline {
-    @apply bg-transparent text-white px-6 py-2.5 rounded-lg
-           transition-all duration-300 font-medium border-2 border-white/50
-           hover:bg-white/10 hover:border-white active:scale-95;
+    @apply bg-transparent text-cyan-400 px-5 py-2.5 rounded-xl
+           transition-all duration-200 font-medium border border-cyan-500/40
+           hover:bg-cyan-950/30 hover:border-cyan-400 active:scale-95 text-sm;
   }
 
   .btn-ghost {
-    @apply bg-transparent text-gray-600 px-4 py-2 rounded-lg
-           transition-all duration-200 font-medium hover:bg-gray-100;
+    @apply bg-transparent text-slate-400 px-4 py-2 rounded-xl
+           transition-all duration-200 font-medium hover:bg-slate-800 hover:text-white text-sm;
   }
 
   /* KPI Cards */
