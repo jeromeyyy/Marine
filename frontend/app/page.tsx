@@ -131,12 +131,12 @@ export default function HomePage() {
 
             {/* Main Headline */}
             <h1 className="text-4xl font-extrabold tracking-tight text-white sm:text-5xl md:text-6xl lg:text-7xl leading-[1.08]">
-              Ratnakara Marine Intelligence &amp; <span className="bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 via-teal-300 to-blue-500">Autonomous Ocean AI</span>
+              Ratnakara Marine Intelligence &amp; <span className="bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 via-teal-300 to-blue-500">Ocean AI Prototypes</span>
             </h1>
 
             {/* Editorial Subtitle */}
             <p className="text-base sm:text-lg text-slate-300 max-w-3xl leading-relaxed font-normal">
-              A high-throughput multimodal intelligence system for the Indian Ocean — harmonizing deep-sea sensor buoys, satellite scatterometry, environmental DNA metabarcoding, and convolutional otolith neural vision.
+              An open-source prototype platform for Indian Ocean marine science — combining 37-species otolith image classification, eDNA sequence shape analysis, fisheries forecasting models, and geospatial biodiversity records from CMLRE-sourced data.
             </p>
 
             {/* Action Buttons */}
