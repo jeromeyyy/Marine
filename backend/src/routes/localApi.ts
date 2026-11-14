@@ -696,9 +696,9 @@ router.get('/forecast', (req: Request, res: Response) => {
     species: s.species,
     month: monthKey(mkDate(i * 15)),
     predicted_abundance: 500 + i * 90,
-    confidence: Number((0.75 + i * 0.03).toFixed(2)),
+    confidence: null as number | null, // no trained model: no defensible confidence value
   }));
-  res.json({ success: true, data });
+  res.json({ success: true, data, model_type: 'seasonal_demo', note: 'Illustrative demo series, not the output of a trained forecasting model.' });
 });
 
 router.get('/forecast/species-list', (req: Request, res: Response) => {
@@ -711,9 +711,9 @@ router.post('/forecast/generate', (req: Request, res: Response) => {
   const data = Array.from({ length: months }).map((_, i) => ({
     month: monthKey(mkDate(-i * 30)),
     predicted_abundance: Math.round(650 + Math.sin(i / 1.8) * 120 + i * 10),
-    confidence: Number((0.78 - i * 0.01).toFixed(2)),
+    confidence: null as number | null, // illustrative simulation only
   }));
-  res.json({ success: true, data: { species, horizonMonths: months, forecast: data.reverse() } });
+  res.json({ success: true, data: { species, horizonMonths: months, forecast: data.reverse(), model_type: 'seasonal_simulation', note: 'Seasonal simulation for demonstration, not a trained forecast.' } });
 });
 
 // Geospatial
@@ -984,10 +984,9 @@ router.get('/biodiversity/sequences', (req: Request, res: Response) => {
     sequenceIdentifier: `SEQ-${String(e.id).padStart(4, '0')}`,
     gene: e.depth < 30 ? '16S' : e.depth < 100 ? 'COX1' : 'ITS',
     taxonomic_identification: e.species,
-    sequenceLength: Math.round(600 + e.confidence * 900),
-    gc_content: Number((40 + e.confidence * 20).toFixed(2)),
-    blast_identity_percent: Number((88 + e.confidence * 12).toFixed(2)),
-    blast_evalue: e.confidence > 0.9 ? 0 : Number((1e-20).toExponential(2)),
+    // NOTE: sequence length, GC content and BLAST identity/e-value are not
+    // measured for these built-in demo records. They were previously synthesized
+    // from the confidence score; removed so no fabricated values are reported.
     latitude: e.latitude,
     longitude: e.longitude,
     recorded_at: e.recorded_at,
@@ -996,7 +995,7 @@ router.get('/biodiversity/sequences', (req: Request, res: Response) => {
     depth: e.depth,
     source: e.source,
   }));
-  res.json({ success: true, data, total: ednaData.length, limit, offset });
+  res.json({ success: true, data, total: ednaData.length, limit, offset, data_nature: 'demo', note: 'Built-in demonstration dataset; sequence length, GC content and BLAST metrics are not measured and are not reported.' });
 });
 
 router.get('/biodiversity/anomalies', (req: Request, res: Response) => {
