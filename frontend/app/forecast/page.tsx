@@ -31,7 +31,7 @@ export default function ForecastPage() {
   const [loading, setLoading] = useState(false);
   const [confidenceLevel, setConfidenceLevel] = useState(95);
 
-  const generateMockForecast = (species: string, months: number): Forecast['data'] => {
+  const generateIllustrativeSimulation = (species: string, months: number): Forecast['data'] => {
     const baseline = 3000 + Math.random() * 2000;
     const data = [];
     const today = new Date();
@@ -69,7 +69,7 @@ export default function ForecastPage() {
     try {
       const newForecasts: Forecast[] = selectedSpecies.map((species) => ({
         species,
-        data: generateMockForecast(species, months),
+        data: generateIllustrativeSimulation(species, months),
       }));
 
       setForecasts(newForecasts);
@@ -143,6 +143,9 @@ export default function ForecastPage() {
         >
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-lg font-semibold text-navy-900">Forecast Settings</h2>
+            <p className="mt-2 rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-800">
+              Illustrative seasonal simulation for demonstration. These curves are not the output of a trained forecasting model and must not be cited as measured predictions.
+            </p>
             <Zap className="w-5 h-5 text-purple-500" />
           </div>
 
