@@ -46,7 +46,7 @@ const coreModules = [
     href: '/edna',
     icon: Dna,
     tag: 'Metabarcoding',
-    description: 'High-throughput environmental DNA assays (16S, COX1, ITS) with BLAST identity meters and full Darwin Core GBIF compliance.',
+    description: 'Environmental DNA assay records (16S, COX1, ITS) with structural shape analysis and a Darwin Core-oriented export structure.',
     gradient: 'from-purple-500/20 to-pink-500/10',
     border: 'border-purple-500/30',
     accent: 'text-purple-400',
@@ -172,15 +172,15 @@ export default function HomePage() {
               </div>
               <div className="rounded-2xl border border-slate-800/90 bg-slate-950/70 p-4">
                 <p className="text-2xl sm:text-3xl font-extrabold text-cyan-400 font-mono">37</p>
-                <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mt-0.5">Otolith AI Models</p>
+                <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mt-0.5">Otolith Species Classes</p>
               </div>
               <div className="rounded-2xl border border-slate-800/90 bg-slate-950/70 p-4">
-                <p className="text-2xl sm:text-3xl font-extrabold text-emerald-400 font-mono">97.4%</p>
-                <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mt-0.5">BLAST Match Precision</p>
+                <p className="text-2xl sm:text-3xl font-extrabold text-emerald-400 font-mono">500</p>
+                <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mt-0.5">Occurrence Records</p>
               </div>
               <div className="rounded-2xl border border-slate-800/90 bg-slate-950/70 p-4">
-                <p className="text-2xl sm:text-3xl font-extrabold text-blue-400 font-mono">6 Nodes</p>
-                <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mt-0.5">Buoy Array Active</p>
+                <p className="text-2xl sm:text-3xl font-extrabold text-blue-400 font-mono">169</p>
+                <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mt-0.5">Mapped Stations</p>
               </div>
             </div>
           </div>
