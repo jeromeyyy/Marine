@@ -134,7 +134,12 @@ async def predict_lstm(request: PredictionRequest):
                 "confidence_high": int(pred * 1.15),
             })
 
-        return result
+        return {
+            "species": request.species,
+            "model_type": "seasonal_simulation",
+            "note": "Seasonal baseline simulation (sine + trend + noise), not a trained time-series model. Saved LSTM weight files exist under models/saved/ but are not loaded by this service, and were trained on synthetic data.",
+            "forecast": result,
+        }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
