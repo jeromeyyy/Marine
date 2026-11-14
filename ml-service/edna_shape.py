@@ -456,18 +456,17 @@ async def species_insight(request: SpeciesInsightRequest):
                 "max": float(np.max(pred)),
             }
 
-        # Species prediction (simplified logic)
-        # In production, this would use a trained classifier
-        species_predictions = predict_species_from_shapes(shape_profiles)
-
+        # Species identification from shape features is not available: no trained
+        # classifier exists. A previous version returned a fixed candidate list
+        # with a hardcoded 0.75 confidence; removed so no invented result is served.
         return {
-            "species_predictions": species_predictions,
+            "species_predictions": [],
+            "species_note": "Species identification from DNA shape features is unavailable: no trained classifier is deployed. The shape statistics and base composition below are computed values.",
             "ecological_signals": {
                 "gc_content": float((sequence.count("G") + sequence.count("C")) / len(sequence)),
                 "at_content": float((sequence.count("A") + sequence.count("T")) / len(sequence)),
                 "sequence_length": len(sequence),
             },
-            "confidence": 0.75,
         }
 
     except Exception as e:
