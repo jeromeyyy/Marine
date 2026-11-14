@@ -227,7 +227,7 @@ export default function DashboardPage() {
             <div>
               <h1 className="text-2xl font-bold text-white md:text-3xl tracking-wide">Marine Intelligence Command Center</h1>
               <p className="mt-1.5 text-xs text-slate-400">
-                Unified multi-trophic analytics across Indian Ocean sensor nodes, satellite scatterometry, eDNA assays, and fishery biomass metrics.
+                Prototype analytics across Indian Ocean eDNA sequence shape data, otolith image classification, fisheries forecasting models, and geospatial biodiversity records.
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
