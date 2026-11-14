@@ -334,7 +334,7 @@ postgresql://[user]:[password]@[host]:[port]/[database]
 **Solution:**
 Change ports in `.env`:
 ```env
-NEXT_PUBLIC_FRONTEND_PORT=3002
+NEXT_PUBLIC_FRONTEND_PORT=3000
 PYTHON_SERVICE_URL=http://localhost:8002
 ```
 
