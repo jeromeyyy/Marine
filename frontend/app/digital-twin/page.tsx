@@ -44,6 +44,7 @@ const END_YEAR = 2050;
 
 export default function DigitalTwinPage() {
   const [loading, setLoading] = useState(true);
+  const [baselineUnavailable, setBaselineUnavailable] = useState(false);
   const [advancedMode, setAdvancedMode] = useState(false);
 
   const [tempIncrease, setTempIncrease] = useState(2);
@@ -122,6 +123,7 @@ export default function DigitalTwinPage() {
         setBaseFishStock(fishStockIndex);
       } catch (error) {
         console.error('Failed to load Digital Twin baseline data:', error);
+        setBaselineUnavailable(true);
       } finally {
         setLoading(false);
       }
@@ -268,9 +270,16 @@ export default function DigitalTwinPage() {
     );
   }
 
+  const baselineNotice = baselineUnavailable ? (
+    <div className="mb-4 rounded-md border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+      Live baseline data is unavailable (backend not reachable). Scenario defaults are shown; trajectories are illustrative simulations, not measured forecasts.
+    </div>
+  ) : null;
+
   return (
     <div className="min-h-screen px-5 py-8 md:px-8">
       <div className="mx-auto max-w-7xl space-y-6">
+        {baselineNotice}
         <section className="surface p-6 md:p-8">
           <p className="eyebrow mb-2">Simulation Environment</p>
           <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
