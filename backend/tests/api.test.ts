@@ -1,10 +1,10 @@
-﻿import assert from 'node:assert';
+import assert from 'node:assert';
 import http from 'node:http';
 
 const BASE_URL = process.env.TEST_API_URL || 'http://localhost:3001';
 
 async function fetchJson(path: string, options: any = {}) {
-  const url = ${BASE_URL};
+  const url = `${BASE_URL}${path}`;
   const response = await fetch(url, options);
   return { status: response.status, data: await response.json() };
 }
@@ -17,10 +17,10 @@ async function runTests() {
   const test = async (name: string, fn: () => Promise<void>) => {
     try {
       await fn();
-      console.log(✓ PASS: );
+      console.log(`✓ PASS: ${name}`);
       passed++;
     } catch (err: any) {
-      console.error(✗ FAIL:  ->, err.message || err);
+      console.error(`✗ FAIL: ${name} ->`, err.message || err);
       failed++;
     }
   };
@@ -37,7 +37,7 @@ async function runTests() {
     const res = await fetchJson('/api/ocean/kpis');
     assert.strictEqual(res.status, 200);
     assert.strictEqual(res.data.success, true);
-    assert.ok(res.data.data.avgTemperature !== undefined);
+    assert.ok(res.data.data.avg_temperature !== undefined); // API field is snake_case, matches frontend consumer
   });
 
   // Test 3: Fisheries Metrics
@@ -89,7 +89,7 @@ async function runTests() {
     assert.ok(res.data.count > 0);
   });
 
-  console.log(\nTest Summary:  Passed,  Failed);
+  console.log(`\nTest Summary: ${passed} Passed, ${failed} Failed`);
   if (failed > 0) process.exit(1);
 }
 
