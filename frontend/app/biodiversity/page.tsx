@@ -20,9 +20,9 @@ interface SequenceRecord {
   sequenceIdentifier: string;
   gene: string;
   taxonomic_identification: string;
-  sequenceLength: number;
-  gc_content: number;
-  blast_identity_percent?: number;
+  sequenceLength?: number;   // not measured for demo records
+  gc_content?: number;       // not measured for demo records
+  blast_identity_percent?: number;  // only shown when actually measured
   blast_evalue?: number;
   species?: string;
   region?: string;
@@ -97,6 +97,7 @@ export default function BiodiversityPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedGene, setSelectedGene] = useState('All');
   const [minIdentity, setMinIdentity] = useState(0);
+  const [usedFallback, setUsedFallback] = useState(false);
   const [filterCritical, setFilterCritical] = useState(false);
   const [totalSequences, setTotalSequences] = useState(0);
 
@@ -153,15 +154,18 @@ export default function BiodiversityPage() {
     }
   }, [selectedGene, minIdentity, searchTerm]);
 
-  // Fallback data for when API is unavailable
+  // Fallback data for when API is unavailable (flagged as demo in the UI)
   const loadFallbackData = () => {
+    setUsedFallback(true);
     // Generate realistic fallback data
+    // Offline demo records: identification fields only. Length, GC% and BLAST
+    // values are intentionally omitted - they were previously invented numbers.
     const mockSequences: SequenceRecord[] = [
-      { id: '1', sequenceIdentifier: 'SEQ-16S-001', gene: '16S', taxonomic_identification: 'Sardinella longiceps', sequenceLength: 1542, gc_content: 52.3, blast_identity_percent: 99.8, blast_evalue: 0 },
-      { id: '2', sequenceIdentifier: 'SEQ-COX1-002', gene: 'COX1', taxonomic_identification: 'Rastrelliger kanagurta', sequenceLength: 658, gc_content: 45.2, blast_identity_percent: 98.5, blast_evalue: 1e-180 },
-      { id: '3', sequenceIdentifier: 'SEQ-16S-003', gene: '16S', taxonomic_identification: 'Thunnus albacares', sequenceLength: 1500, gc_content: 51.8, blast_identity_percent: 97.2, blast_evalue: 5e-220 },
-      { id: '4', sequenceIdentifier: 'SEQ-COX1-004', gene: 'COX1', taxonomic_identification: 'Katsuwonus pelamis', sequenceLength: 660, gc_content: 44.7, blast_identity_percent: 99.1, blast_evalue: 0 },
-      { id: '5', sequenceIdentifier: 'SEQ-ITS-005', gene: 'ITS', taxonomic_identification: 'Microalgae sp.', sequenceLength: 800, gc_content: 55.6, blast_identity_percent: 96.4, blast_evalue: 2e-110 },
+      { id: '1', sequenceIdentifier: 'SEQ-16S-001', gene: '16S', taxonomic_identification: 'Sardinella longiceps' },
+      { id: '2', sequenceIdentifier: 'SEQ-COX1-002', gene: 'COX1', taxonomic_identification: 'Rastrelliger kanagurta' },
+      { id: '3', sequenceIdentifier: 'SEQ-16S-003', gene: '16S', taxonomic_identification: 'Thunnus albacares' },
+      { id: '4', sequenceIdentifier: 'SEQ-COX1-004', gene: 'COX1', taxonomic_identification: 'Katsuwonus pelamis' },
+      { id: '5', sequenceIdentifier: 'SEQ-ITS-005', gene: 'ITS', taxonomic_identification: 'Microalgae sp.' },
     ];
 
     const mockAnomalies: AnomalyAlert[] = [
@@ -320,7 +324,7 @@ export default function BiodiversityPage() {
   // Calculate stats from live data
   const criticalCount = kpis?.anomalies.critical || anomalies.filter(a => a.alert_level === 'critical').length;
   const unacknowledgedCount = kpis?.anomalies.unacknowledged || anomalies.filter(a => !a.acknowledged).length;
-  const highQualitySequences = kpis?.sequences.highQuality || sequences.filter(s => (s.blast_identity_percent || 0) >= 97).length;
+  const highQualitySequences = kpis?.sequences.highQuality ?? sequences.filter(s => s.blast_identity_percent != null && s.blast_identity_percent >= 97).length;
   const averageRiskScore = riskIndex.length ? Math.round(riskIndex.reduce((sum, item) => sum + item.score, 0) / riskIndex.length) : 0;
   const criticalRegions = riskIndex.filter((item) => item.category === 'Critical').length;
 
@@ -347,6 +351,11 @@ export default function BiodiversityPage() {
               <div>
                 <h1 className="text-2xl font-bold text-white tracking-wide">Biodiversity & Genomic Analytics</h1>
                 <p className="text-xs text-slate-400">eDNA sequences, otolith AI classifications, species richness, and ecological risk models</p>
+                {usedFallback && (
+                  <p className="mt-2 inline-block rounded-md border border-amber-500/40 bg-amber-950/60 px-2 py-1 text-[11px] font-semibold text-amber-300">
+                    Backend unavailable - showing built-in demo records (identification fields only; length, GC% and BLAST values are not measured)
+                  </p>
+                )}
               </div>
             </div>
             <div className="flex items-center gap-3">
@@ -764,22 +773,26 @@ export default function BiodiversityPage() {
                       <td className="px-4 py-3 text-slate-100 italic font-medium">
                         {seq.taxonomic_identification || seq.species || 'Unknown'}
                       </td>
-                      <td className="px-4 py-3 text-center text-slate-400 font-mono">{seq.sequenceLength?.toLocaleString()}</td>
+                      <td className="px-4 py-3 text-center text-slate-400 font-mono">{seq.sequenceLength != null ? seq.sequenceLength.toLocaleString() : 'n/a'}</td>
                       <td className="px-4 py-3 text-center">
+                        {seq.gc_content != null ? (
                         <span className={`font-mono font-bold ${
                           seq.gc_content > 60 ? 'text-rose-400' :
                           seq.gc_content > 50 ? 'text-emerald-400' : 'text-cyan-400'
                         }`}>
-                          {seq.gc_content?.toFixed(1)}%
+                          {seq.gc_content.toFixed(1)}%
                         </span>
+                        ) : <span className="text-slate-500 font-mono">n/a</span>}
                       </td>
                       <td className="px-4 py-3 text-center">
+                        {seq.blast_identity_percent != null ? (
                         <span className={`font-mono font-bold ${
-                          (seq.blast_identity_percent || 0) >= 99 ? 'text-emerald-400' :
-                          (seq.blast_identity_percent || 0) >= 95 ? 'text-cyan-400' : 'text-amber-400'
+                          seq.blast_identity_percent >= 99 ? 'text-emerald-400' :
+                          seq.blast_identity_percent >= 95 ? 'text-cyan-400' : 'text-amber-400'
                         }`}>
-                          {(seq.blast_identity_percent || 0).toFixed(1)}%
+                          {seq.blast_identity_percent.toFixed(1)}%
                         </span>
+                        ) : <span className="text-slate-500 font-mono" title="BLAST identity is not measured for these records">not measured</span>}
                       </td>
                       <td className="px-4 py-3 text-center text-slate-400 font-mono text-[11px]">
                         {seq.blast_evalue !== undefined && seq.blast_evalue !== null
