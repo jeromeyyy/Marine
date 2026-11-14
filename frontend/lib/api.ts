@@ -4,7 +4,7 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 30000,
+  timeout: 15000, // fail within 15s so pages surface an error state instead of hanging indefinitely
   headers: {
     'Content-Type': 'application/json',
   },
