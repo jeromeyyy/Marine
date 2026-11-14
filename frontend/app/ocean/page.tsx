@@ -47,6 +47,7 @@ export default function OceanPage() {
   const [trends, setTrends] = useState<any[]>([]);
   const [geoData, setGeoData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [selectedRegion, setSelectedRegion] = useState<string>('all');
   const [activeParam, setActiveParam] = useState<string>('all');
   const [showAdvancedAnalysis, setShowAdvancedAnalysis] = useState(false);
@@ -65,6 +66,7 @@ export default function OceanPage() {
         setGeoData(geoRes.data.data);
       } catch (error) {
         console.error('Failed to fetch ocean data:', error);
+        setLoadError(true);
       } finally {
         setLoading(false);
       }
@@ -238,6 +240,11 @@ export default function OceanPage() {
 
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,_#e0f2fe,_#f8fafc_35%,_#f8fafc_100%)]">
+      {loadError && (
+        <div className="bg-amber-50 border-b border-amber-300 px-8 py-3 text-sm text-amber-800">
+          Ocean data service is unreachable - no live or cached measurements could be loaded. Check that the backend API is running and publicly reachable.
+        </div>
+      )}
       {/* Header */}
       <div className="bg-white/90 backdrop-blur border-b border-sky-100">
         <div className="px-8 py-6">
