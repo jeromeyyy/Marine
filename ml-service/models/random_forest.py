@@ -4,7 +4,10 @@ from typing import List
 
 class RandomForestPredictor:
     def __init__(self):
-        # Initialize with a simple trained model (simulated)
+        # Default: simulation mode - rule-based synthetic fit (explicitly labeled).
+        # Replaced by the joblib artifact in models/saved/ when main.py loads it.
+        self.artifact_loaded = False
+        self.serving_mode = "simulation_synthetic_fit"
         self.model = RandomForestClassifier(n_estimators=100, random_state=42)
         self._initialize_model()
 
@@ -56,8 +59,13 @@ class RandomForestPredictor:
         """
         predictions = self.model.predict(features)
 
+        if self.artifact_loaded:
+            # Raw classes: artifact carries no label metadata, so class
+            # semantics are unverified and must not be mapped to categories.
+            return [int(p) for p in predictions]
+
         category_map = {0: 'low', 1: 'medium', 2: 'high'}
-        return [category_map[p] for p in predictions]
+        return [category_map[int(p)] for p in predictions]
 
     def train(self, X_train, y_train):
         """
