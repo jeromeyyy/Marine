@@ -40,8 +40,6 @@ const DNAShapeAnalyzer = () => {
   // State Management
   const [sequence, setSequence] = useState('');
   const [feature, setFeature] = useState('MGW');
-  const [enableFL, setEnableFL] = useState(false);
-  const [deepLayer, setDeepLayer] = useState(4);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<PredictionResult | null>(null);
   const [comparisonMode, setComparisonMode] = useState(false);
@@ -92,8 +90,6 @@ const DNAShapeAnalyzer = () => {
         body: JSON.stringify({
           sequence: sequence.toUpperCase().replace(/\s/g, ''),
           feature,
-          enableFL,
-          deepLayer,
         }),
       });
 
@@ -150,7 +146,6 @@ const DNAShapeAnalyzer = () => {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('feature', feature);
-    formData.append('deepLayer', deepLayer.toString());
 
     try {
       const response = await fetch('/api/edna-shape/batch-predict', {
@@ -214,10 +209,12 @@ const DNAShapeAnalyzer = () => {
       {/* Header */}
       <div className="max-w-7xl mx-auto mb-8">
         <div className="bg-white rounded-lg shadow-lg p-8 border-l-4 border-blue-600">
-          <h1 className="text-4xl font-bold text-slate-800 mb-2">🧬 Deep eDNA Shape Analyzer</h1>
+          <h1 className="text-4xl font-bold text-slate-800 mb-2">🧬 eDNA Shape Analyzer</h1>
           <p className="text-slate-600">
-            Predict DNA structural shape features using deep learning. Analyze molecular signals
-            for ecological insights and species identification.
+            Compute DNA structural shape features (minor groove width, roll, twist and more) from
+            sequence with a deterministic pentamer lookup based on published biophysical tables.
+            No trained deep-learning model is currently deployed; every result is labeled with the
+            method used.
           </p>
         </div>
       </div>
@@ -317,46 +314,14 @@ const DNAShapeAnalyzer = () => {
               </p>
             </div>
 
-            {/* Options */}
+            {/* Method note */}
             {!comparisonMode && (
-              <>
-                <div className="mb-6">
-                  <label className="flex items-center gap-3 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={enableFL}
-                      onChange={(e) => setEnableFL(e.target.checked)}
-                      className="w-4 h-4 text-blue-600 rounded"
-                    />
-                    <span className="text-sm font-semibold text-slate-700">
-                      Enable Shape Fluctuation (FL)
-                    </span>
-                  </label>
-                  <p className="text-xs text-slate-500 mt-1">
-                    Include flexibility/variability estimates
-                  </p>
-                </div>
-
-                <div className="mb-6">
-                  <label className="block text-sm font-semibold text-slate-700 mb-2">
-                    🏗️ Deep Layer
-                  </label>
-                  <select
-                    value={deepLayer}
-                    onChange={(e) => setDeepLayer(parseInt(e.target.value))}
-                    className="w-full p-3 border-2 border-slate-300 rounded-lg focus:border-blue-500 focus:outline-none"
-                  >
-                    {[2, 3, 4, 5].map((layer) => (
-                      <option key={layer} value={layer}>
-                        {layer} layers {layer === 4 ? '(default)' : ''}
-                      </option>
-                    ))}
-                  </select>
-                  <p className="text-xs text-slate-500 mt-1">
-                    Deeper layers = more complex patterns, slower processing
-                  </p>
-                </div>
-              </>
+              <div className="mb-6 rounded-md bg-slate-50 border border-slate-200 p-3">
+                <p className="text-xs text-slate-500">
+                  Method: deterministic pentamer lookup (published biophysical tables). Shape
+                  fluctuation and deep-layer options are not available in the current deployment.
+                </p>
+              </div>
             )}
 
             {/* Action Buttons */}
