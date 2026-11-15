@@ -115,8 +115,10 @@ async function callPythonPipeline(payload: any): Promise<PredictionResult> {
     return {
       success: false,
       error:
-        'Deep DNA shape service unavailable: no reachable Python shape service ' +
-        '(set PYTHON_SERVICE_URL) and no local pipeline on this host',
+        'Deep DNA shape service unavailable: the ML service is not reachable ' +
+        'from this deployment. If the service was idle, it may be starting up ' +
+        'now - wait a short while and retry. If this keeps failing, the ' +
+        'deployment has no reachable ML service.',
     };
   }
 }
