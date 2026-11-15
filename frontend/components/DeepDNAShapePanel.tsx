@@ -29,14 +29,7 @@ interface ShapeResult {
     min: number;
     max: number;
   };
-  confidence: number;
   processingTime: number;
-}
-
-interface SpeciesResult {
-  species: string;
-  probability: number;
-  confidence: number;
 }
 
 interface EcologicalMetrics {
@@ -58,7 +51,6 @@ const DeepDNAShapePanel: React.FC = () => {
   const [result, setResult] = useState<ShapeResult | null>(null);
   const [plotType, setPlotType] = useState<PlotType>('line');
   const [fileError, setFileError] = useState('');
-  const [speciesResults, setSpeciesResults] = useState<SpeciesResult[]>([]);
   const [ecologicalMetrics, setEcologicalMetrics] = useState<EcologicalMetrics | null>(null);
   const [debounceTimer, setDebounceTimer] = useState<NodeJS.Timeout | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -159,9 +151,11 @@ const DeepDNAShapePanel: React.FC = () => {
       setResult(data);
       setFileError('');
 
-      // Calculate species and ecological metrics
+      // Ecological metrics are simple sequence-derived heuristics (GC content,
+      // base-composition entropy), not model outputs; fetch them for display.
+      // Automated species classification was removed: no trained classifier or
+      // validated reference database exists in the repository.
       if (data.sequences.length > 0) {
-        await fetchSpeciesClassification(data.sequences);
         await fetchEcologicalMetrics(data.sequences);
       }
 
@@ -171,28 +165,6 @@ const DeepDNAShapePanel: React.FC = () => {
       toast.error(`Error: ${error.message}`);
     } finally {
       setLoading(false);
-    }
-  };
-
-  // Fetch species classification
-  const fetchSpeciesClassification = async (sequences: SequenceData[]) => {
-    try {
-      const response = await fetch('/api/edna/deep-shape', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          sequences: sequences.map((s) => s.sequence),
-          feature,
-          mode: 'species-classify',
-        }),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setSpeciesResults(data.species || []);
-      }
-    } catch (error) {
-      console.error('Species classification error:', error);
     }
   };
 
@@ -412,7 +384,7 @@ const DeepDNAShapePanel: React.FC = () => {
         }));
 
     const layout = {
-      title: 'Deep DNAshape Prediction',
+      title: 'DNA Shape Prediction',
       xaxis: {
         title: plotType === 'line' ? 'Position' : 'Sequence',
         showgrid: true,
@@ -447,7 +419,10 @@ const DeepDNAShapePanel: React.FC = () => {
       <div className="bg-white rounded-lg shadow-md p-6 mb-6 border-l-4 border-blue-600">
         <h1 className="text-3xl font-bold text-slate-800 mb-2">🧬 eDNA Analysis</h1>
         <p className="text-slate-600">
-          Predict DNA structural shape features using deep learning. Analyze multiple sequences in real-time.
+          Predict DNA structural shape features from sequence. Uses the deepDNAshape library when it is
+          installed on the pipeline host, and a labeled deterministic pentamer lookup (published
+          biophysical tables) otherwise. Ecological metrics are simple sequence-derived heuristics
+          (GC content and base-composition entropy), not model outputs.
         </p>
       </div>
 
@@ -635,48 +610,13 @@ const DeepDNAShapePanel: React.FC = () => {
                   <p className="text-lg font-bold text-blue-600">{result.statistics.max.toFixed(3)}</p>
                 </div>
               </div>
-              <div className="mt-4 pt-4 border-t">
-                <p className="text-xs text-slate-500">Confidence Score</p>
-                <div className="flex items-center gap-2 mt-1">
-                  <div className="flex-1 bg-slate-200 rounded-full h-2">
-                    <div
-                      className="bg-green-600 h-2 rounded-full"
-                      style={{ width: `${result.confidence * 100}%` }}
-                    />
-                  </div>
-                  <p className="text-sm font-bold text-slate-800">{(result.confidence * 100).toFixed(1)}%</p>
-                </div>
-              </div>
             </div>
           )}
 
-          {/* Species Classification Results */}
-          {speciesResults.length > 0 && (
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h2 className="text-lg font-bold text-slate-800 mb-4">🐟 Species Classification</h2>
-              <div className="space-y-3">
-                {speciesResults.map((species, idx) => (
-                  <div key={idx} className="flex justify-between items-center p-3 bg-slate-50 rounded-lg">
-                    <span className="font-semibold text-slate-800">{species.species}</span>
-                    <div className="flex items-center gap-2">
-                      <div className="w-24 bg-slate-200 rounded-full h-2">
-                        <div
-                          className="bg-blue-600 h-2 rounded-full"
-                          style={{ width: `${species.probability * 100}%` }}
-                        />
-                      </div>
-                      <span className="text-sm font-bold">{(species.probability * 100).toFixed(1)}%</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Ecological Metrics */}
+          {/* Ecological Metrics (sequence-derived heuristics, not model outputs) */}
           {ecologicalMetrics && (
             <div className="bg-white rounded-lg shadow-md p-6">
-              <h2 className="text-lg font-bold text-slate-800 mb-4">🌍 Ecological Metrics</h2>
+              <h2 className="text-lg font-bold text-slate-800 mb-4">🌍 Sequence Metrics (heuristic)</h2>
               <div className="grid grid-cols-2 gap-4">
                 <div className="p-4 bg-slate-50 rounded-lg">
                   <p className="text-xs text-slate-500">Biodiversity Index</p>
