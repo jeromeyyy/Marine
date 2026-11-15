@@ -6,6 +6,44 @@ import { fileURLToPath } from 'url';
 
 const router = Router();
 
+// Generated analytics are opt-in. Keep this gate before every legacy demo route.
+// The location file is the only observation-like source served by this router.
+const demoPrefixes = new Set([
+  'ocean', 'fisheries', 'edna', 'taxonomy', 'correlation', 'forecast', 'geo',
+  'insights', 'biodiversity', 'alerts', 'digital-twin', 'gis', 'vessels',
+  'sensors', 'satellite', 'explorer',
+]);
+router.use((req, res, next) => {
+  const prefix = req.path.split('/')[1];
+  const fileBacked = prefix === 'species-locations';
+  if (!fileBacked && !demoPrefixes.has(prefix)) return next();
+  const demo = !fileBacked && (req.query.mode === 'demo' || req.get('X-Marine-Mode') === 'demo');
+  res.set('Cache-Control', 'no-store');
+  res.set('X-Marine-Data-Mode', demo ? 'demo' : 'file-backed');
+  if (!fileBacked && !demo) {
+    return res.status(503).json({
+      success: false, data: null, dataMode: 'file-backed',
+      error: 'No file-backed measurements are available for this analytic. Generated examples require explicit Demo mode.',
+      source: 'backend/data/species_locations.json',
+      availableData: '/api/species-locations',
+    });
+  }
+  // Never export generated measurements as scientific occurrence records.
+  if (req.path === '/biodiversity/export/darwin-core') {
+    return res.status(422).json({ success: false, dataMode: 'demo',
+      error: 'Scientific occurrence export is disabled for generated demo data.' });
+  }
+  const json = res.json.bind(res);
+  res.json = ((body: any) => json({ ...body,
+    dataMode: demo ? 'demo' : 'file-backed',
+    provenance: demo
+      ? { generated: true, note: 'Synthetic or hardcoded demonstration outputs, sometimes using packaged species names and coordinates. Not field measurements, validated predictions, live tracking, or scientific findings.' }
+      : { generated: false, file: 'backend/data/species_locations.json', note: 'Packaged records; source attribution is carried from the file and has not been independently verified. Not a live feed.' },
+  })) as typeof res.json;
+  next();
+});
+
+
 // Load species locations data
 let speciesLocationsData: any = null;
 try {
@@ -158,7 +196,7 @@ const buildEdnaData = () => {
           concentration: Number((0.5 + Math.random() * 0.8).toFixed(3)),
           confidence: Number((0.6 + Math.random() * 0.35).toFixed(2)),
           depth: 10 + Math.floor(Math.random() * 120),
-          source: 'Real CSV data',
+          source: 'Synthetic demo measurements on packaged coordinates',
           recorded_at: mkDate(Math.floor(Math.random() * 90)),
         });
       });
@@ -177,7 +215,7 @@ const buildEdnaData = () => {
       concentration: Number((0.6 + (i % 12) * 0.14).toFixed(3)),
       confidence: Number((0.68 + (i % 9) * 0.03).toFixed(2)),
       depth: 10 + (i % 7) * 18,
-      source: 'Local dataset',
+      source: 'Synthetic demo dataset',
       recorded_at: mkDate(i * 3),
     };
   });
