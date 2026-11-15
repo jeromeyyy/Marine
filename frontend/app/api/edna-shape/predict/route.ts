@@ -39,9 +39,15 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         }),
         signal: AbortSignal.timeout(30000),
       });
-    } catch {
+    } catch (fetchError: any) {
+      const timedOut = fetchError?.name === 'TimeoutError';
       return NextResponse.json(
-        { success: false, error: 'DNA shape service unreachable' },
+        {
+          success: false,
+          error: timedOut
+            ? 'DNA shape service timed out: the ML service did not respond within 30 seconds. If it was idle, it may have been starting up - wait a short while and retry. If this keeps failing, the deployment has no reachable ML service.'
+            : 'DNA shape service unreachable: the ML service is not configured or not reachable for this deployment. If the service was idle, it may be starting up now - wait a short while and retry. If this keeps failing, the deployment has no reachable ML service.',
+        },
         { status: 503 }
       );
     }
