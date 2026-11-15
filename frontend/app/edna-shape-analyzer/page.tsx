@@ -20,7 +20,7 @@ interface PredictionResult {
     mean: number;
     std: number;
   };
-  confidence: number;
+  method?: string | null;
   processingTimeMs: number;
 }
 
@@ -411,9 +411,11 @@ const DNAShapeAnalyzer = () => {
                 <p className="text-sm text-slate-700">
                   <strong>Sequence:</strong> {result.sequence.length} bp
                 </p>
-                <p className="text-sm text-slate-700">
-                  <strong>Confidence:</strong> {(result.confidence * 100).toFixed(1)}%
-                </p>
+                {result.method && (
+                  <p className="text-sm text-slate-700">
+                    <strong>Method:</strong> {result.method}
+                  </p>
+                )}
                 <p className="text-sm text-slate-700">
                   <strong>Processing:</strong> {result.processingTimeMs}ms
                 </p>
