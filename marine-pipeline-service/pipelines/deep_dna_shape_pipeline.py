@@ -104,51 +104,69 @@ class DeepDNAShapePipeline:
             return None
 
 
+    # Simplified pentamer lookup table derived from published DNA shape
+    # values (same deterministic table served by ml-service/edna_shape.py).
+    # Used only when the deepDNAshape package is not importable.
+    PENTAMER_TABLE = {
+        "MGW": {
+            "AAAAA": 6.5, "AAAAC": 5.2, "AAAAT": 5.1, "AAAAG": 5.8,
+            "CCCCG": 4.2, "TTTTA": 5.3, "GGGGC": 6.1, "CGCGC": 6.9,
+            "AATTC": 5.6, "CGGCC": 5.2, "TAAAA": 5.1,
+        },
+        "EP": {
+            "AAAAA": -0.5, "CCCCG": -0.8, "GGGGC": -0.6, "CGCGC": -0.4,
+        },
+        "Shift": {
+            "AAAAA": -0.1, "CCCCG": 0.2, "GGGGC": 0.15, "CGCGC": -0.05,
+        },
+        "Slide": {
+            "AAAAA": 0.3, "CCCCG": -0.4, "GGGGC": 0.2, "CGCGC": 0.0,
+        },
+        "Rise": {
+            "AAAAA": 3.35, "CCCCG": 3.25, "GGGGC": 3.30, "CGCGC": 3.38,
+        },
+        "Tilt": {
+            "AAAAA": -0.2, "CCCCG": 0.5, "GGGGC": 0.1, "CGCGC": -0.3,
+        },
+        "Roll": {
+            "AAAAA": 0.0, "CCCCG": -5.0, "GGGGC": -4.5, "CGCGC": -8.5,
+        },
+        "HelT": {
+            "AAAAA": 35.0, "CCCCG": 32.0, "GGGGC": 34.5, "CGCGC": 30.5,
+        },
+    }
+
     @staticmethod
     def _predict_fallback(sequence: str, feature: str, layer: int = 4) -> List[float]:
         """
-        Fallback prediction using physics-inspired heuristics when 
-        official deepDNAshape library is unavailable or fails.
-        
-        Generates more accurate values by mimicking deep learning behavior
-        with smooth transitions and feature-specific ranges.
+        Deterministic pentamer lookup used when the official deepDNAshape
+        library is unavailable or fails. Values come from the published
+        pentamer table above; unknown pentamers map to the midpoint of the
+        feature's table values. No randomness, no synthesized curves.
         """
         seq_clean = sequence.upper().replace('N', 'A')
-        min_val, max_val = DeepDNAShapePipeline.FEATURE_RANGES.get(feature, (0, 1))
-        
+        table = DeepDNAShapePipeline.PENTAMER_TABLE.get(feature)
+        if table is None:
+            # Feature outside the table: deterministic typical value
+            if feature == "MGW":
+                typical = 5.5
+            elif "Shift" in feature or "Slide" in feature:
+                typical = 0.0
+            elif "Rise" in feature:
+                typical = 3.3
+            else:
+                typical = 0.0
+            return [typical for _ in seq_clean]
+
+        midpoint = sum(table.values()) / len(table)
         predictions = []
-        for i, base in enumerate(seq_clean):
-            # Different base contributions for different features
-            base_vals = {
-                'A': 0.4, 'C': 0.6, 'G': 0.65, 'T': 0.45, 'N': 0.5
-            }
-            base_contrib = base_vals.get(base, 0.5)
-            
-            # Smooth wave based on position (less erratic than previous version)
-            position_phase = (i / max(len(seq_clean) - 1, 1)) * np.pi
-            wave = (np.sin(position_phase) + 1.0) / 2.0
-            
-            # Check for dinucleotide context (impacts MGW heavily)
-            context = ''
-            if i > 0:
-                context = seq_clean[i-1:i+1]
-            elif i < len(seq_clean) - 1:
-                context = seq_clean[i:i+2]
-            
-            # GC-rich dinucleotides have wider grooves
-            gc_bonus = context.count('G') * 0.08 + context.count('C') * 0.08
-            
-            # Combine with lower noise for accuracy
-            combined = 0.45 * wave + 0.35 * base_contrib + 0.20 * (0.5 + gc_bonus)
-            value = combined * (max_val - min_val) + min_val
-            
-            # Minimal fluctuation (0.5% of range instead of 2%)
-            noise = np.random.normal(0, (max_val - min_val) * 0.005)
-            value = value + noise
-            value = np.clip(value, min_val, max_val)
-            
-            predictions.append(float(value))
-        
+        window = 5
+        for i in range(len(seq_clean)):
+            start = max(0, i - window // 2)
+            end = min(len(seq_clean), i + window // 2 + 1)
+            pent = seq_clean[start:end]
+            predictions.append(float(table.get(pent, midpoint)))
+
         return predictions
 
     @classmethod
@@ -212,43 +230,7 @@ class DeepDNAShapePipeline:
         return predictions
 
 
-class SpeciesClassifier:
-    """
-    Classifies species based on DNA shape features using heuristic rules.
-    Can be enhanced with trained ML models from marine genomics datasets.
-    """
 
-    SPECIES_SIGNATURES = {
-        'Indian Mackerel': {'confidence': 0.78},
-        'Atlantic Cod': {'confidence': 0.75},
-        'Yellowfin Tuna': {'confidence': 0.76},
-        'Salmon': {'confidence': 0.72},
-        'Anchovy': {'confidence': 0.73},
-    }
-
-    @classmethod
-    def classify(cls, sequences: List[str]) -> List[Dict]:
-        """
-        Classify species from DNA sequences.
-        Returns ranked species with probabilities.
-        """
-        if not sequences:
-            return []
-        
-        results = []
-        for species, sig in sorted(
-            cls.SPECIES_SIGNATURES.items(),
-            key=lambda x: x[1]['confidence'],
-            reverse=True
-        ):
-            total_conf = sum(s[1]['confidence'] for s in cls.SPECIES_SIGNATURES.items())
-            results.append({
-                'species': species,
-                'probability': round(sig['confidence'] / total_conf, 3),
-                'confidence': sig['confidence'],
-            })
-        
-        return results
 
 
 class EcologicalMetrics:
@@ -352,7 +334,7 @@ def predict(
     
     Modes:
     - 'predict': Predict DNA shape features
-    - 'species-classify': Classify likely species
+    - 'species-classify': unsupported (returns an explicit error)
     - 'ecological-metrics': Calculate ecological metrics
     
     Args:
@@ -388,10 +370,12 @@ def predict(
             }
         
         if mode == 'species-classify':
-            species_list = SpeciesClassifier.classify(sequences_clean)
+            # Removed: the previous implementation returned a fixed hardcoded
+            # species list regardless of input. No trained classifier or
+            # validated reference database exists in the repository.
             return {
-                'success': True,
-                'species': species_list,
+                'success': False,
+                'error': 'Automated species classification is not supported: no trained classifier or validated reference database in the repository',
                 'processingTime': int((time.time() - start) * 1000),
             }
         
@@ -427,7 +411,8 @@ def predict(
             'fluctuation': fluctuation,
             'layer': layer,
             'statistics': stats,
-            'confidence': 0.85,
+            'method': ('deepDNAshape' if DEEPDNASHAPE_AVAILABLE
+                       else 'pentamer lookup (published table); deepDNAshape not installed'),
             'processingTime': int((time.time() - start) * 1000),
         }
     
@@ -473,4 +458,3 @@ if __name__ == '__main__':
     except Exception as e:
         print(json.dumps({'success': False, 'error': str(e)}))
         sys.exit(1)
-
