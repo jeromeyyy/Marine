@@ -125,7 +125,7 @@ export default function OtolithIdentification() {
             {loading ? (
               <>
                 <div className="h-4 w-4 rounded-full border-2 border-white border-t-transparent animate-spin"></div>
-                <span>Neural Inference Processing...</span>
+                <span>Processing image...</span>
               </>
             ) : (
               <>
