@@ -474,41 +474,6 @@ const OTOLITH_SPECIES_LIST: OtolithSpeciesInfo[] = [
   }
 ];
 
-function matchSpeciesFromMetadata(filename: string, buffer: Buffer): { species: OtolithSpeciesInfo; confidence: number } {
-  const baseName = filename.replace(/\.[^/.]+$/, '');
-  const clean = baseName.toLowerCase().replace(/[-_ ]/g, '');
-
-  // 1. Check for species name in filename
-  for (const sp of OTOLITH_SPECIES_LIST) {
-    const spKey = sp.species.toLowerCase().replace(/[-_ ]/g, '');
-    const genusKey = sp.genus.toLowerCase();
-    if (clean.includes(spKey) || (clean.includes(genusKey) && genusKey.length > 4)) {
-      return { species: sp, confidence: 0.975 };
-    }
-  }
-
-  // 2. Check for trailing accession numbers (e.g., CMLRE0TL00005 -> 5, OTL-14 -> 14)
-  const trailingDigitsMatch = baseName.match(/(\d{1,4})$/);
-  if (trailingDigitsMatch && trailingDigitsMatch[1]) {
-    const rawNum = parseInt(trailingDigitsMatch[1], 10);
-    if (rawNum >= 1 && rawNum <= OTOLITH_SPECIES_LIST.length) {
-      const sp = OTOLITH_SPECIES_LIST[rawNum - 1];
-      const conf = Number((0.95 + (buffer.length % 5) * 0.008).toFixed(3));
-      return { species: sp, confidence: conf };
-    }
-  }
-
-  // 3. Hash image buffer byte characteristics deterministically to one of the 37 species
-  let hash = 0;
-  const sampleStride = Math.max(1, Math.floor(buffer.length / 100));
-  for (let i = 0; i < buffer.length; i += sampleStride) {
-    hash = (hash * 31 + buffer[i]) >>> 0;
-  }
-  const index = hash % OTOLITH_SPECIES_LIST.length;
-  const matched = OTOLITH_SPECIES_LIST[index];
-  const conf = Number((0.91 + ((buffer.length + hash) % 7) * 0.01).toFixed(3));
-  return { species: matched, confidence: conf };
-}
 
 async function callMLService(imageBuffer: Buffer, filename: string, mimeType: string) {
   const mlServiceUrl = process.env.ML_SERVICE_URL || 'http://localhost:8000';
@@ -546,53 +511,57 @@ router.post('/predict', upload.single('image'), async (req: Request, res: Respon
       return res.status(400).json({ error: 'Image file is required' });
     }
 
-    let speciesInfo: OtolithSpeciesInfo;
-    let confidence = 0.95;
-    let inferenceSource = 'ml-microservice';
-
+    let mlPrediction: any;
     try {
-      const mlPrediction: any = await callMLService(req.file.buffer, req.file.originalname, req.file.mimetype);
-      const predictedName = String(mlPrediction.species || '').trim().toLowerCase();
-      confidence = Number(mlPrediction.confidence || 0.94);
-      
-      const found = OTOLITH_SPECIES_LIST.find(
-        s => s.species.toLowerCase() === predictedName || s.species.toLowerCase().includes(predictedName)
-      );
-      speciesInfo = found || matchSpeciesFromMetadata(req.file.originalname, req.file.buffer).species;
+      mlPrediction = await callMLService(req.file.buffer, req.file.originalname, req.file.mimetype);
     } catch {
-      // Morphological Pattern & Accession Neural Engine
-      inferenceSource = 'morphological-feature-classifier';
-      const match = matchSpeciesFromMetadata(req.file.originalname, req.file.buffer);
-      speciesInfo = match.species;
-      confidence = match.confidence;
+      // No fabricated fallback: without the ML service there is no real
+      // classification to report.
+      return res.status(503).json({
+        success: false,
+        error: 'Otolith classification service unavailable: no ML service is configured or reachable for this deployment'
+      });
     }
 
-    // Generate realistic top alternative candidates
-    const altIdx1 = (speciesInfo.index + 2) % OTOLITH_SPECIES_LIST.length;
-    const altIdx2 = (speciesInfo.index + 7) % OTOLITH_SPECIES_LIST.length;
-    const alt1 = OTOLITH_SPECIES_LIST[altIdx1];
-    const alt2 = OTOLITH_SPECIES_LIST[altIdx2];
+    const predictedName = String(mlPrediction.species || '').trim();
+    if (!predictedName) {
+      return res.status(502).json({ success: false, error: 'ML service returned no prediction' });
+    }
+    const confidence = Number(mlPrediction.confidence || 0);
+
+    // Taxonomy enrichment only: the hardcoded list may annotate a REAL
+    // predicted label, never substitute for one.
+    const found = OTOLITH_SPECIES_LIST.find(
+      s => s.species.toLowerCase() === predictedName.toLowerCase()
+    );
+
+    // Pass through real candidates from the ML service when provided;
+    // never synthesize alternates.
+    const topCandidates = Array.isArray(mlPrediction.top_k) && mlPrediction.top_k.length > 0
+      ? mlPrediction.top_k.map((c: any) => ({
+          species: String(c.species || c.label || ''),
+          confidence: Number(c.confidence || c.score || 0)
+        }))
+      : [{ species: predictedName, confidence }];
 
     return res.json({
       success: true,
-      species: speciesInfo.species,
+      species: predictedName,
       confidence,
-      inferenceSource,
-      taxonomy: {
-        kingdom: speciesInfo.kingdom,
-        phylum: speciesInfo.phylum,
-        class: speciesInfo.class,
-        order: speciesInfo.order,
-        family: speciesInfo.family,
-        genus: speciesInfo.genus,
-        common_name: speciesInfo.common_name,
-        description: speciesInfo.description
-      },
-      topCandidates: [
-        { species: speciesInfo.species, confidence },
-        { species: alt1.species, confidence: Number(((1 - confidence) * 0.65).toFixed(3)) },
-        { species: alt2.species, confidence: Number(((1 - confidence) * 0.35).toFixed(3)) }
-      ]
+      inferenceSource: 'ml-microservice',
+      backend: mlPrediction.backend || null,
+      validation: mlPrediction.validation || null,
+      taxonomy: found ? {
+        kingdom: found.kingdom,
+        phylum: found.phylum,
+        class: found.class,
+        order: found.order,
+        family: found.family,
+        genus: found.genus,
+        common_name: found.common_name,
+        description: found.description
+      } : null,
+      topCandidates
     });
   } catch (error: any) {
     console.error('Otolith prediction route error:', error);
@@ -608,14 +577,14 @@ router.get('/detected-species', async (_req: Request, res: Response) => {
       family: sp.family,
       genus: sp.genus,
       order: sp.order,
-      class: sp.class,
-      detections: 50 - (sp.index % 20) * 2
+      class: sp.class
     }));
-    return res.json({ success: true, data: list });
+    // Label inventory only; no detection counts are recorded anywhere, so
+    // none are reported.
+    return res.json({ success: true, data: list, note: 'Classifier label inventory, not observed detections' });
   } catch (error: any) {
     return res.status(500).json({ success: false, error: 'Failed to retrieve detected species' });
   }
 });
 
 export default router;
-
