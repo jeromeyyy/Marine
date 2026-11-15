@@ -10,6 +10,14 @@ const api = axios.create({
   },
 });
 
+// Explicit per-tab opt-in, shared with the visible mode switch. Never default to demo.
+api.interceptors.request.use((config) => {
+  if (typeof window !== 'undefined' && window.sessionStorage.getItem('marine-data-mode') === 'demo') {
+    config.headers['X-Marine-Mode'] = 'demo';
+  }
+  return config;
+});
+
 export const oceanAPI = {
   getAll: (params?: any) => api.get('/api/ocean', { params }),
   getKPIs: () => api.get('/api/ocean/kpis'),
