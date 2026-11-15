@@ -7,8 +7,19 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from typing import List, Dict, Optional
 import numpy as np
-import torch
-import torch.nn as nn
+
+# torch is only needed by the untrained DNAShapeNet below, which is not
+# served (no trained weights exist). Keep the import optional so the service
+# runs in slim runtimes (e.g. tflite/numpy-only containers) where torch is
+# not installed.
+try:
+    import torch
+    import torch.nn as nn
+    TORCH_AVAILABLE = True
+except ImportError:
+    torch = None
+    nn = None
+    TORCH_AVAILABLE = False
 from datetime import datetime
 import logging
 import time
@@ -82,7 +93,7 @@ class PredictionResponse(BaseModel):
 # DNA SHAPE NEURAL NETWORK MODEL
 # ============================================================================
 
-class DNAShapeNet(nn.Module):
+class DNAShapeNet(nn.Module if TORCH_AVAILABLE else object):
     """
     Deep learning model for DNA shape prediction
     Architecture:
@@ -128,7 +139,7 @@ class DNAShapeNet(nn.Module):
             nn.Linear(16, 1),
         )
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x):  # x: torch.Tensor (torch optional; see guard above)
         """
         Forward pass
         Args:
@@ -306,7 +317,7 @@ def calculate_statistics(predictions: np.ndarray) -> Dict[str, float]:
 # GLOBAL MODEL INITIALIZATION
 # ============================================================================
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu") if TORCH_AVAILABLE else "cpu (torch not installed)"
 logger.info(f"Using device: {device}")
 
 # Initialize model
@@ -526,37 +537,138 @@ async def ecological_analysis(request: EcologicalAnalysisRequest):
 
 
 # ============================================================================
-# HELPER FUNCTIONS
+# COMPATIBILITY ENDPOINT (pipeline-server contract)
 # ============================================================================
+# The frontend's /api/edna/deep-shape route proxies to PYTHON_SERVICE_URL
+# using the marine-pipeline-service request/response shape
+# ({sequences[], feature, fluctuation, layer, mode}). Serving that contract
+# here lets ONE deployed service back both the /api/edna-shape/* routes
+# (/shape/*) and the /api/edna/deep-shape route (/predict), so a single
+# PYTHON_SERVICE_URL works for every eDNA shape feature.
 
-def predict_species_from_shapes(shape_profiles: Dict) -> List[Dict]:
+class PipelinePredictRequest(BaseModel):
+    """Request shape used by the marine-pipeline-service /predict endpoint"""
+    sequences: List[str]
+    feature: str = "MGW"
+    fluctuation: bool = False
+    layer: int = 4
+    mode: str = "predict"
+
+
+def _ecological_metrics(sequences: List[str]) -> Dict:
     """
-    Predict species from shape profiles using heuristic rules
-    In production, use a trained classifier (Random Forest, NN, etc.)
+    Deterministic sequence-derived heuristics (GC content, base-composition
+    entropy, k-mer richness). Not model outputs; same computations as the
+    offline pipeline's EcologicalMetrics.
     """
-    species_candidates = [
-        {"species": "Rastrelliger kanagurta", "confidence": 0.45, "common_name": "Indian Mackerel"},
-        {"species": "Sardinella longiceps", "confidence": 0.25, "common_name": "Indian Oil Sardine"},
-        {"species": "Thunnus albacares", "confidence": 0.18, "common_name": "Yellowfin Tuna"},
-        {"species": "Unknown", "confidence": 0.12, "common_name": "Unidentified"},
+    if not sequences:
+        return {'biodiversityIndex': 0.0, 'speciesRichness': 0,
+                'anomalyScore': 0.0, 'dominantCluster': 'Unknown'}
+
+    gc_values = []
+    for seq in sequences:
+        s = seq.upper().replace('N', 'A')
+        gc_values.append((s.count('G') + s.count('C')) / len(s) if s else 0)
+    gc_mean = float(np.mean(gc_values))
+    gc_std = float(np.std(gc_values)) if len(gc_values) > 1 else 0.0
+
+    if len(sequences) == 1:
+        seq = sequences[0].upper().replace('N', 'A')
+        base_counts = {'A': 0, 'C': 0, 'G': 0, 'T': 0}
+        for b in seq:
+            base_counts[b] = base_counts.get(b, 0) + 1
+        total = sum(base_counts.values()) or 1
+        freqs = [c / total for c in base_counts.values() if c > 0]
+        entropy = -sum(f * np.log2(f) for f in freqs)
+        biodiversity = entropy / np.log2(4)
+    else:
+        biodiversity = min(1.0, 0.4 + gc_std * 0.6)
+
+    all_kmers = set()
+    for seq in sequences:
+        s = seq.upper().replace('N', 'A')
+        for i in range(max(0, len(s) - 4)):
+            all_kmers.add(s[i:i+5])
+    richness = len(all_kmers)
+
+    if len(sequences) == 1:
+        anomaly = min(1.0, max(1.0 - gc_values[0], gc_values[0]) * 2.0 - 1.0)
+    elif gc_std > 0:
+        z = [abs((g - gc_mean) / gc_std) for g in gc_values]
+        anomaly = min(1.0, sum(1 for v in z if v > 2.0) / len(sequences))
+    else:
+        anomaly = 0.0
+
+    cluster = 'Low-GC' if gc_mean < 0.4 else ('High-GC' if gc_mean > 0.6 else 'Medium-GC')
+    return {
+        'biodiversityIndex': float(round(biodiversity, 3)),
+        'speciesRichness': richness,
+        'anomalyScore': float(round(anomaly, 3)),
+        'dominantCluster': cluster,
+    }
+
+
+@app.post("/predict")
+async def pipeline_compatible_predict(request: PipelinePredictRequest):
+    """Serve the pipeline-server /predict contract via the pentamer lookup"""
+    start = time.time()
+    sequences_clean = [
+        s.upper().replace('N', 'A')
+        for s in request.sequences
+        if s and all(c in 'ACGTN' for c in s.upper())
     ]
+    if not sequences_clean:
+        return {'success': False, 'error': 'No valid DNA sequences provided'}
 
-    # Adjust based on shape profiles
-    mgw_mean = shape_profiles.get("MGW", {}).get("mean", 5.5)
-    rise_mean = shape_profiles.get("Rise", {}).get("mean", 3.3)
+    if request.mode == 'species-classify':
+        return {
+            'success': False,
+            'error': 'Automated species classification is not supported: no trained classifier or validated reference database in the repository',
+            'processingTime': int((time.time() - start) * 1000),
+        }
 
-    # Simple heuristic
-    if mgw_mean > 6.0:
-        species_candidates[0]["confidence"] += 0.1
-    if rise_mean < 3.25:
-        species_candidates[1]["confidence"] += 0.1
+    if request.mode == 'ecological-metrics':
+        return {
+            'success': True,
+            **_ecological_metrics(sequences_clean),
+            'method': 'sequence-derived heuristics (GC content, base-composition entropy); not model outputs',
+            'processingTime': int((time.time() - start) * 1000),
+        }
 
-    # Normalize
-    total_conf = sum(s["confidence"] for s in species_candidates)
-    for spec in species_candidates:
-        spec["confidence"] /= total_conf
+    # default: predict shape features with the deterministic pentamer lookup
+    seq_results = []
+    all_values = []
+    for idx, seq in enumerate(sequences_clean):
+        values = predict_shape_pentamer_lookup(seq, request.feature)
+        seq_results.append({
+            'id': f'seq_{idx + 1}',
+            'sequence': seq,
+            'predictions': [
+                {'position': i + 1, 'base': base, 'value': float(v)}
+                for i, (base, v) in enumerate(zip(seq, values))
+            ],
+        })
+        all_values.extend(float(v) for v in values)
 
-    return sorted(species_candidates, key=lambda x: x["confidence"], reverse=True)
+    stats = {}
+    if all_values:
+        stats = {
+            'mean': float(np.mean(all_values)),
+            'std': float(np.std(all_values)),
+            'min': float(np.min(all_values)),
+            'max': float(np.max(all_values)),
+        }
+
+    return {
+        'success': True,
+        'sequences': seq_results,
+        'feature': request.feature,
+        'fluctuation': request.fluctuation,
+        'layer': request.layer,
+        'statistics': stats,
+        'method': 'pentamer lookup (published table); no trained model deployed',
+        'processingTime': int((time.time() - start) * 1000),
+    }
 
 
 if __name__ == "__main__":
