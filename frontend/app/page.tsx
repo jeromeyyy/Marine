@@ -160,7 +160,7 @@ export default function HomePage() {
                 className="inline-flex items-center justify-center gap-2 rounded-2xl border border-cyan-500/30 bg-cyan-950/40 px-6 py-3.5 text-sm font-semibold text-cyan-300 transition hover:bg-cyan-900/40 hover:border-cyan-500/50"
               >
                 <Sparkles className="h-4 w-4 text-cyan-400" />
-                <span>Otolith AI Scanner</span>
+                <span>Biodiversity Explorer</span>
               </Link>
             </div>
 
@@ -311,4 +311,3 @@ export default function HomePage() {
     </div>
   );
 }
-
