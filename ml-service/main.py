@@ -5,14 +5,21 @@ from typing import List, Optional, Dict, Any
 import numpy as np
 import json
 import os
-import pickle
+import joblib
 from datetime import datetime, timedelta
 from pathlib import Path
 
 from models.lstm_model import LSTMPredictor
 from models.random_forest import RandomForestPredictor
 from models.regression import RegressionPredictor
-from services.otolith_classifier import OtolithClassifier
+try:
+    # Full runtime: TensorFlow-backed classifier (softmax or embedding-kNN fallback)
+    from services.otolith_classifier import OtolithClassifier
+    _OTOLITH_BACKEND = "tensorflow"
+except ImportError:
+    # Slim runtime (no TensorFlow): TFLite-backed classifier, softmax mode only
+    OtolithClassifier = None
+    _OTOLITH_BACKEND = "tflite"
 
 app = FastAPI(
     title="Ratnakara Marine Data ML Service",
@@ -33,16 +40,24 @@ MODEL_DIR = os.path.join(os.path.dirname(__file__), 'models', 'saved')
 OTOLITH_MODEL_PATH = os.path.join(os.path.dirname(__file__), 'models', 'otolith_model.h5')
 OTOLITH_LABELS_PATH = os.path.join(os.path.dirname(__file__), 'models', 'otolith_labels.json')
 OTOLITH_EMBEDDING_INDEX_PATH = os.path.join(os.path.dirname(__file__), 'models', 'otolith_embedding_index.npz')
+OTOLITH_TFLITE_PATH = os.path.join(os.path.dirname(__file__), 'models', 'otolith_model.tflite')
 
 # Initialize predictors
 lstm_predictor = LSTMPredictor()
 rf_predictor = RandomForestPredictor()
 regression_predictor = RegressionPredictor()
-otolith_classifier = OtolithClassifier(
-    model_path=Path(OTOLITH_MODEL_PATH).resolve(),
-    labels_path=Path(OTOLITH_LABELS_PATH).resolve(),
-    embedding_index_path=Path(OTOLITH_EMBEDDING_INDEX_PATH).resolve(),
-)
+if _OTOLITH_BACKEND == "tensorflow":
+    otolith_classifier = OtolithClassifier(
+        model_path=Path(OTOLITH_MODEL_PATH).resolve(),
+        labels_path=Path(OTOLITH_LABELS_PATH).resolve(),
+        embedding_index_path=Path(OTOLITH_EMBEDDING_INDEX_PATH).resolve(),
+    )
+else:
+    from services.otolith_tflite import OtolithTFLiteClassifier
+    otolith_classifier = OtolithTFLiteClassifier(
+        model_path=Path(OTOLITH_TFLITE_PATH).resolve(),
+        labels_path=Path(OTOLITH_LABELS_PATH).resolve(),
+    )
 
 # Load trained models if available
 def load_trained_models():
@@ -53,10 +68,10 @@ def load_trained_models():
     rf_path = os.path.join(MODEL_DIR, 'random_forest.pkl')
     if os.path.exists(rf_path):
         try:
-            with open(rf_path, 'rb') as f:
-                data = pickle.load(f)
-                rf_predictor.model = data['model']
-                print(f"Loaded Random Forest model from {rf_path}")
+            rf_predictor.model = joblib.load(rf_path)  # joblib-serialized bare estimator
+            rf_predictor.artifact_loaded = True
+            rf_predictor.serving_mode = "joblib_artifact_unverified_provenance"
+            print(f"Loaded Random Forest model from {rf_path}")
         except Exception as e:
             print(f"Failed to load Random Forest: {e}")
 
@@ -64,11 +79,10 @@ def load_trained_models():
     lr_path = os.path.join(MODEL_DIR, 'linear_regression.pkl')
     if os.path.exists(lr_path):
         try:
-            with open(lr_path, 'rb') as f:
-                data = pickle.load(f)
-                regression_predictor.model = data['model']
-                regression_predictor.scaler = data.get('scaler')
-                print(f"Loaded Linear Regression model from {lr_path}")
+            regression_predictor.model = joblib.load(lr_path)  # joblib-serialized bare estimator
+            regression_predictor.artifact_loaded = True
+            regression_predictor.serving_mode = "joblib_artifact_unverified_provenance"
+            print(f"Loaded Linear Regression model from {lr_path}")
         except Exception as e:
             print(f"Failed to load Linear Regression: {e}")
 
@@ -155,8 +169,8 @@ async def predict_random_forest(request: ClassificationRequest):
 
         prediction = rf_predictor.predict(features)
 
-        return {
-            "abundance_category": prediction[0],
+        response = {
+            "serving_mode": rf_predictor.serving_mode,
             "features": {
                 "temperature": request.temperature,
                 "salinity": request.salinity,
@@ -164,6 +178,16 @@ async def predict_random_forest(request: ClassificationRequest):
                 "oxygen": request.oxygen,
             }
         }
+        if rf_predictor.artifact_loaded:
+            response["abundance_class"] = prediction[0]
+            response["note"] = ("RandomForestClassifier joblib artifact; class semantics "
+                                "unverified (no label metadata in artifact); not a validated "
+                                "abundance forecast")
+        else:
+            response["abundance_category"] = prediction[0]
+            response["note"] = ("Simulation mode: rule-based synthetic fit at startup, "
+                                "not a trained model")
+        return response
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -172,9 +196,14 @@ async def predict_regression(request: RegressionRequest):
     try:
         predictions = regression_predictor.predict(request.data)
 
+        note = ("LinearRegression joblib artifact; training data provenance unverified"
+                if regression_predictor.artifact_loaded
+                else "Simulation mode: synthetic fit at startup, not a trained model")
         return {
             "predictions": predictions,
-            "model": "linear_regression"
+            "model": "linear_regression",
+            "serving_mode": regression_predictor.serving_mode,
+            "note": note
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -188,10 +217,12 @@ async def predict_otolith(image: UploadFile = File(...)):
     try:
         image_bytes = await image.read()
         result = otolith_classifier.predict(image_bytes)
-        return {
-            "species": result["species"],
-            "confidence": result["confidence"],
-        }
+        result["backend"] = _OTOLITH_BACKEND
+        result.setdefault("validation", (
+            "unvalidated: 1/37 top-1 agreement on packaged reference set "
+            "(uniform-random level); not a verified identification"
+        ))
+        return result
     except RuntimeError as e:
         raise HTTPException(status_code=503, detail=str(e))
     except Exception as e:
