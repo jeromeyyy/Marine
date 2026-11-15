@@ -282,43 +282,9 @@ export default function BiodiversityPage() {
     }
   };
 
-  // Export to Darwin Core
-  const exportToGBIF = async () => {
-    try {
-      const response = await fetch(`${API_BASE}/api/biodiversity/export/darwin-core?limit=1000`);
-      const data = await response.json();
-
-      if (data.success) {
-        // Download XML
-        const element = document.createElement('a');
-        element.setAttribute('href', `data:text/xml;charset=utf-8,${encodeURIComponent(data.metaXml)}`);
-        element.setAttribute('download', `ratnakara-darwin-core-${new Date().toISOString().split('T')[0]}.xml`);
-        element.style.display = 'none';
-        document.body.appendChild(element);
-        element.click();
-        document.body.removeChild(element);
-
-        toast.success(`Exported ${data.recordCount} records in Darwin Core format`);
-      }
-    } catch (error) {
-      // Fallback export
-      const darwinCoreXml = `<?xml version="1.0" encoding="UTF-8"?>
-<archive xmlns="http://rs.tdwg.org/dwca/text/">
-  <core encoding="UTF-8">
-    <files><location>occurrence.txt</location></files>
-    <id index="0" />
-    <field index="0" term="http://purl.org/dc/terms/identifier"/>
-    <field index="1" term="http://rs.tdwg.org/dwc/terms/occurrenceID"/>
-    <field index="2" term="http://rs.tdwg.org/dwc/terms/scientificName"/>
-  </core>
-</archive>`;
-
-      const element = document.createElement('a');
-      element.setAttribute('href', `data:text/xml;charset=utf-8,${encodeURIComponent(darwinCoreXml)}`);
-      element.setAttribute('download', `ratnakara-darwin-core-${new Date().toISOString().split('T')[0]}.xml`);
-      element.click();
-      toast.success('Darwin Core XML exported (sample template)');
-    }
+  // Demo records must never be exported as scientific occurrences.
+  const exportToGBIF = () => {
+    toast.error('Scientific occurrence export is disabled for generated demo data.');
   };
 
   // Calculate stats from live data
@@ -369,10 +335,12 @@ export default function BiodiversityPage() {
               </button>
               <button
                 onClick={exportToGBIF}
+                disabled
+                title="Generated demo data cannot be exported as scientific occurrences"
                 className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-emerald-500/20 transition text-xs"
               >
                 <Download className="w-3.5 h-3.5" />
-                Export GBIF Darwin Core
+                Occurrence export unavailable
               </button>
             </div>
           </div>
