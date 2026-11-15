@@ -4,6 +4,9 @@ from typing import List, Dict
 
 class RegressionPredictor:
     def __init__(self):
+        # Default: simulation mode - synthetic fit (explicitly labeled).
+        self.artifact_loaded = False
+        self.serving_mode = "simulation_synthetic_fit"
         self.model = LinearRegression()
         self._initialize_model()
 
