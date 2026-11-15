@@ -94,7 +94,8 @@ const DNAShapeAnalyzer = () => {
       });
 
       if (!response.ok) {
-        throw new Error(`API error: ${response.statusText}`);
+        const detail = await response.json().catch(() => ({}));
+        throw new Error(detail.error || `API error: ${response.statusText}`);
       }
 
       const data: PredictionResult = await response.json();
@@ -124,7 +125,8 @@ const DNAShapeAnalyzer = () => {
       });
 
       if (!response.ok) {
-        throw new Error(`API error: ${response.statusText}`);
+        const detail = await response.json().catch(() => ({}));
+        throw new Error(detail.error || `API error: ${response.statusText}`);
       }
 
       const data: ComparisonResult = await response.json();
@@ -181,6 +183,8 @@ const DNAShapeAnalyzer = () => {
     }
 
     const csvContent = [
+      ['Experimental simplified calculator; not validated measurements'],
+      ['Method', result.method || 'simplified partial pentamer lookup'],
       ['Position', 'Base', 'Shape Value'],
       ...result.predictions.map((p) => [p.position, p.base, p.value.toFixed(4)]),
       [],
