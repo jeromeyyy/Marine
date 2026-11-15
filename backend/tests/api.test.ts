@@ -1,16 +1,16 @@
 import assert from 'node:assert';
-import http from 'node:http';
+import fs from 'node:fs';
 
 const BASE_URL = process.env.TEST_API_URL || 'http://localhost:3001';
 
 async function fetchJson(path: string, options: any = {}) {
-  const url = `${BASE_URL}${path}`;
+  const url = `${BASE_URL}${path}${path.includes('?') ? '&' : '?'}mode=demo`;
   const response = await fetch(url, options);
   return { status: response.status, data: await response.json() };
 }
 
 async function runTests() {
-  console.log('--- Starting Ratnakara Marine Backend Integration Tests ---');
+  console.log('--- Starting Ratnakara Marine Backend Demo Integration Tests ---');
   let passed = 0;
   let failed = 0;
 
@@ -93,4 +93,43 @@ async function runTests() {
   if (failed > 0) process.exit(1);
 }
 
-runTests();
+async function runDataModes() {
+const base = BASE_URL;
+const generated = ['ocean', 'ocean/kpis', 'fisheries', 'edna', 'taxonomy/tree', 'correlation', 'forecast', 'geo/stations', 'insights/generate', 'biodiversity/kpis', 'biodiversity/anomalies', 'alerts/active', 'gis/layers', 'vessels/tracking', 'sensors/live', 'satellite/pfz', 'satellite/hab', 'explorer/query'];
+let checks = 0;
+for (const path of generated) {
+  const response = await fetch(`${base}/api/${path}`);
+  const body = await response.json() as any;
+  assert.equal(response.status, 503, path);
+  assert.equal(body.dataMode, 'file-backed', path);
+  assert.equal(body.data, null, path);
+  checks++;
+  const demoResponse = await fetch(`${base}/api/${path}?mode=demo`);
+  const demo = await demoResponse.json() as any;
+  assert.equal(demoResponse.status, 200, path);
+  assert.equal(demo.dataMode, 'demo', path);
+  assert.equal(demo.provenance.generated, true, path);
+  checks++;
+}
+const raw = JSON.parse(fs.readFileSync('data/species_locations.json', 'utf8'));
+const response = await fetch(`${base}/api/species-locations`);
+const file = await response.json() as any;
+assert.equal(response.status, 200);
+assert.deepEqual(file.data, raw);
+assert.equal(file.dataMode, 'file-backed');
+assert.equal(file.provenance.generated, false);
+checks++;
+const headerDemo = await (await fetch(`${base}/api/ocean`, { headers: { 'X-Marine-Mode': 'demo' } })).json() as any;
+assert.equal(headerDemo.dataMode, 'demo'); checks++;
+for (const suffix of ['', '?mode=demo']) {
+  const exportResponse = await fetch(`${base}/api/biodiversity/export/darwin-core${suffix}`);
+  assert.ok([422, 503].includes(exportResponse.status)); checks++;
+}
+// A demo call must not change the next caller's default.
+assert.equal((await fetch(`${base}/api/ocean`)).status, 503); checks++;
+console.log(`${checks} data-mode checks passed`);
+
+}
+
+await runDataModes();
+await runTests();
