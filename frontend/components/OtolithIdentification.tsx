@@ -10,6 +10,8 @@ type PredictionResult = {
   species: string;
   confidence: number;
   inferenceSource?: string;
+  backend?: string | null;
+  validation?: string | null;
   taxonomy: {
     kingdom?: string | null;
     phylum?: string | null;
@@ -72,15 +74,15 @@ export default function OtolithIdentification() {
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-lg font-bold text-white tracking-wide">Otolith AI Neural Classifier</h2>
-              <span className="rounded-full bg-cyan-950/80 border border-cyan-500/40 px-2 py-0.5 text-[10px] font-semibold text-cyan-300">CNN v3.0</span>
+              <h2 className="text-lg font-bold text-white tracking-wide">Otolith Image Classifier</h2>
+              <span className="rounded-full bg-amber-950/80 border border-amber-500/40 px-2 py-0.5 text-[10px] font-semibold text-amber-300">Unvalidated model</span>
             </div>
-            <p className="text-xs text-slate-400">Deep transfer learning for micro-morphology fish species identification.</p>
+            <p className="text-xs text-slate-400">37-class MobileNetV2 artifact. Predictions are not verified identifications.</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
           <span className="flex h-2 w-2 rounded-full bg-cyan-400 animate-ping"></span>
-          <span className="text-xs font-mono text-cyan-300">Ready for Scan</span>
+          <span className="text-xs font-mono text-slate-400">Awaiting image</span>
         </div>
       </div>
 
@@ -162,21 +164,25 @@ export default function OtolithIdentification() {
 
       {/* Results Section */}
       {result && (
-        <div className="mt-5 rounded-2xl border border-cyan-500/30 bg-gradient-to-br from-slate-950/90 to-cyan-950/30 p-5 shadow-xl">
+        <div className="mt-5 rounded-2xl border border-amber-500/30 bg-gradient-to-br from-slate-950/90 to-amber-950/20 p-5 shadow-xl">
+          <div className="mb-3 flex items-start gap-2 rounded-xl border border-amber-500/40 bg-amber-950/50 p-3 text-xs text-amber-200">
+            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-amber-400" />
+            <span>{result.validation || 'Unvalidated classifier: this output is not a verified species identification.'}</span>
+          </div>
           <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800/80 pb-3">
             <div>
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="h-5 w-5 text-emerald-400" />
                 <h3 className="text-lg font-bold text-white italic">{result.species}</h3>
-                <span className="rounded-full bg-emerald-950/90 border border-emerald-500/40 px-2.5 py-0.5 text-xs font-bold text-emerald-300">
-                  {(result.confidence * 100).toFixed(1)}% Confidence
+                <span className="rounded-full bg-slate-800 border border-slate-600 px-2.5 py-0.5 text-xs font-bold text-slate-300">
+                  {(result.confidence * 100).toFixed(1)}% raw score
                 </span>
               </div>
               <p className="text-xs text-cyan-300 font-medium mt-0.5">{result.taxonomy?.common_name}</p>
             </div>
             <div className="flex items-center gap-1.5 rounded-lg bg-slate-900 border border-slate-800 px-3 py-1.5 text-xs text-slate-400">
               <Cpu className="h-3.5 w-3.5 text-cyan-400" />
-              <span className="font-mono">Engine: {result.inferenceSource || 'Neural V3'}</span>
+              <span className="font-mono">Engine: {result.backend || result.inferenceSource || 'ml-service'}</span>
             </div>
           </div>
 
@@ -208,4 +214,3 @@ export default function OtolithIdentification() {
     </section>
   );
 }
-
