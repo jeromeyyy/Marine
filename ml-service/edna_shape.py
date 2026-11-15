@@ -75,6 +75,7 @@ class PredictionResponse(BaseModel):
     predictions: List[PredictionData]
     statistics: Statistics
     processing_time_ms: float
+    method: str = "pentamer lookup (published table); no trained model deployed"
 
 
 # ============================================================================
@@ -232,19 +233,20 @@ def predict_shape_pentamer_lookup(sequence: str, feature: str) -> np.ndarray:
 
         # Look up or estimate value
         if feature in pentamer_table:
-            value = pentamer_table[feature].get(pent, 0.0)
-            # Add some noise based on position variance
-            value += np.random.normal(0, 0.1)
+            # Unknown pentamer: midpoint of this feature's table values
+            # (deterministic; no random noise).
+            table = pentamer_table[feature]
+            value = table.get(pent, sum(table.values()) / len(table))
         else:
-            # Default values based on feature type
+            # Deterministic typical values for features outside the table
             if feature == "MGW":
-                value = np.random.normal(5.5, 0.8)  # MGW typically 3-8
+                value = 5.5  # typical MGW range: 3-8
             elif "Shift" in feature or "Slide" in feature:
-                value = np.random.normal(0.0, 0.3)
+                value = 0.0
             elif "Rise" in feature:
-                value = np.random.normal(3.3, 0.05)
+                value = 3.3
             else:
-                value = np.random.normal(0.0, 1.0)
+                value = 0.0
 
         predictions.append(value)
 
@@ -308,8 +310,9 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 logger.info(f"Using device: {device}")
 
 # Initialize model
-shape_model = DNAShapeNet(num_layers=4).to(device)
-shape_model.eval()  # Set to evaluation mode
+# No trained DNAShapeNet weights exist in the repository, so no global model
+# is instantiated: serving an untrained network's output would be synthesized
+# data. All handlers use the deterministic pentamer lookup above.
 
 logger.info("Deep eDNA Shape Model initialized")
 
@@ -345,15 +348,14 @@ async def predict_shape(request: PredictRequest):
         if not all(base in "ACGTN" for base in sequence):
             raise HTTPException(status_code=400, detail="Invalid DNA bases")
 
-        # Predict shape
-        predictions = predict_shape_neural(
-            sequence, request.feature, shape_model, device
-        )
+        # Predict shape with the deterministic pentamer lookup.
+        # The neural path required trained weights that are not in the
+        # repository; serving its untrained output would be synthesized data.
+        predictions = predict_shape_pentamer_lookup(sequence, request.feature)
 
-        # Add shape fluctuation if enabled
+        # Shape-fluctuation estimates need a trained model; not available.
         if request.enable_fl:
-            fl_values = np.abs(np.random.normal(0, 0.15, len(predictions)))
-            predictions = predictions * (1 + fl_values)
+            logger.info("fluctuation estimates unavailable without a trained model")
 
         # Build response
         stats = calculate_statistics(predictions)
@@ -391,9 +393,10 @@ async def compare_sequences(request: CompareRequest):
         if not all(base in "ACGTN" for base in seq1 + seq2):
             raise HTTPException(status_code=400, detail="Invalid DNA bases")
 
-        # Predict for both
-        pred1 = predict_shape_neural(seq1, request.feature, shape_model, device)
-        pred2 = predict_shape_neural(seq2, request.feature, shape_model, device)
+        # Predict for both with the deterministic pentamer lookup (no
+        # trained neural weights exist in the repository)
+        pred1 = predict_shape_pentamer_lookup(seq1, request.feature)
+        pred2 = predict_shape_pentamer_lookup(seq2, request.feature)
 
         # Align sequences (simple padding)
         max_len = max(len(seq1), len(seq2))
@@ -448,7 +451,7 @@ async def species_insight(request: SpeciesInsightRequest):
         shape_profiles = {}
 
         for feature in features_to_predict:
-            pred = predict_shape_neural(sequence, feature, shape_model, device)
+            pred = predict_shape_pentamer_lookup(sequence, feature)
             shape_profiles[feature] = {
                 "mean": float(np.mean(pred)),
                 "std": float(np.std(pred)),
@@ -492,7 +495,7 @@ async def ecological_analysis(request: EcologicalAnalysisRequest):
         for seq in sequences:
             seq = seq.upper().replace(" ", "")
             if len(seq) >= 5:
-                pred = predict_shape_neural(seq, "MGW", shape_model, device)
+                pred = predict_shape_pentamer_lookup(seq, "MGW")
                 shape_profiles.append(pred)
 
                 # Simple species detection based on GC content
