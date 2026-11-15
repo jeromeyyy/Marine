@@ -49,98 +49,6 @@ interface PredictionResult {
   error?: string;
 }
 
-function buildLocalFallback(payload: {
-  sequences: string[];
-  feature: string;
-  layer: number;
-  fluctuation: boolean;
-  mode: string;
-}): PredictionResult {
-  const featureRanges: Record<string, [number, number]> = {
-    MGW: [3.0, 8.0],
-    EP: [-1.0, 0.0],
-    Shear: [-2.0, 2.0],
-    Stretch: [-0.5, 0.5],
-    Stagger: [-0.5, 0.5],
-    Buckle: [-30, 30],
-    ProT: [-30, 30],
-    Opening: [0, 5],
-    Shift: [-3, 3],
-    Slide: [-5, 5],
-    Rise: [3.0, 3.5],
-    Tilt: [-30, 30],
-    Roll: [-30, 30],
-    HelT: [30, 40],
-  };
-
-  const [minV, maxV] = featureRanges[payload.feature] || [0, 1];
-
-  if (payload.mode === 'ecological-metrics') {
-    return {
-      success: true,
-      biodiversityIndex: 0.72,
-      speciesRichness: Math.max(1, payload.sequences.length),
-      anomalyScore: 0.12,
-      dominantCluster: 'Medium-GC',
-    };
-  }
-
-  if (payload.mode === 'species-classify') {
-    return {
-      success: true,
-      species: [
-        { species: 'Indian Mackerel', probability: 0.41, confidence: 0.78 },
-        { species: 'Yellowfin Tuna', probability: 0.33, confidence: 0.73 },
-        { species: 'Anchovy', probability: 0.26, confidence: 0.69 },
-      ],
-    };
-  }
-
-  const sequences = payload.sequences.map((sequence, index) => {
-    const clean = sequence.toUpperCase();
-    const predictions = clean.split('').map((base, i) => {
-      const gc = base === 'G' || base === 'C' ? 1 : 0;
-      const phase = ((i + 1) / Math.max(clean.length, 1)) * Math.PI * (payload.layer / 2);
-      const wave = (Math.sin(phase) + 1) / 2;
-      const baseSignal = 0.55 * wave + 0.45 * gc;
-      const noise = payload.fluctuation ? (Math.random() - 0.5) * 0.06 : 0;
-      const normalized = Math.max(0, Math.min(1, baseSignal + noise));
-      const value = minV + normalized * (maxV - minV);
-      return {
-        position: i + 1,
-        base,
-        value: Number(value.toFixed(4)),
-      };
-    });
-
-    return {
-      id: `seq_${index + 1}`,
-      sequence: clean,
-      predictions,
-    };
-  });
-
-  const allValues = sequences.flatMap((s) => s.predictions.map((p) => p.value));
-  const mean = allValues.reduce((a, b) => a + b, 0) / Math.max(allValues.length, 1);
-  const variance =
-    allValues.reduce((acc, v) => acc + Math.pow(v - mean, 2), 0) / Math.max(allValues.length, 1);
-
-  return {
-    success: true,
-    sequences,
-    feature: payload.feature,
-    fluctuation: payload.fluctuation,
-    layer: payload.layer,
-    statistics: {
-      mean,
-      std: Math.sqrt(variance),
-      min: Math.min(...allValues),
-      max: Math.max(...allValues),
-    },
-    confidence: 0.82,
-    processingTime: 12,
-  };
-}
 
 /**
  * Call Python pipeline service
@@ -203,7 +111,13 @@ async function callPythonPipeline(payload: any): Promise<PredictionResult> {
     return JSON.parse(stdout);
   } catch (pythonError) {
     console.error('Python execution failed:', pythonError);
-    return buildLocalFallback(payload);
+    // No silent synthesized values: report the service as unavailable.
+    return {
+      success: false,
+      error:
+        'Deep DNA shape service unavailable: no reachable Python shape service ' +
+        '(set PYTHON_SERVICE_URL) and no local pipeline on this host',
+    };
   }
 }
 
@@ -260,7 +174,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const result = await callPythonPipeline(payload);
 
     if (!result.success) {
-      return NextResponse.json(result, { status: 500 });
+      return NextResponse.json(result, { status: 503 });
     }
 
     // Handle batch mode (return CSV)
