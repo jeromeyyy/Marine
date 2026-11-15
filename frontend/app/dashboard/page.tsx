@@ -353,8 +353,8 @@ export default function DashboardPage() {
               <CoverageRow label="Anemometer Wind Dynamics" current={Number(oceanKPIs?.data_coverage?.wind_speed_records || 0)} total={Number(oceanKPIs?.total_records || 0)} />
             </div>
             <div className="mt-4 pt-3 border-t border-slate-800 flex items-center justify-between text-xs text-slate-400">
-              <span>Overall Telemetry Health:</span>
-              <span className="font-bold text-emerald-400 font-mono">Optimal (98.6%)</span>
+              <span>Overall Coverage:</span>
+              <span className="font-bold text-emerald-400 font-mono">{coverageQuality !== null ? `${coverageQuality}%` : 'No data'}</span>
             </div>
           </div>
         </section>
