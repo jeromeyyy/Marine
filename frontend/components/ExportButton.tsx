@@ -70,6 +70,10 @@ export const ExportButton = ({
     }
   };
 
+  if (typeof window !== 'undefined' && window.sessionStorage.getItem('marine-data-mode') === 'demo') {
+    return <span className="text-xs text-amber-300">Demo export disabled: generated data is not scientific evidence.</span>;
+  }
+
   const availableFormats = formats.filter((fmt) => {
     if ((fmt === 'png' || fmt === 'pdf') && !chartRef) return false;
     return true;
