@@ -82,7 +82,9 @@ export default function OtolithIdentification() {
         </div>
         <div className="flex items-center gap-2">
           <span className="flex h-2 w-2 rounded-full bg-cyan-400 animate-ping"></span>
-          <span className="text-xs font-mono text-slate-400">Awaiting image</span>
+          <span className="text-xs font-mono text-slate-400">
+            {loading ? 'Analyzing...' : result ? 'Result ready' : error ? 'Analysis failed' : 'Awaiting image'}
+          </span>
         </div>
       </div>
 
