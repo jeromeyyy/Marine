@@ -272,10 +272,10 @@ export default function DashboardPage() {
           />
           <StatCard
             icon={Dna}
-            label="eDNA Identification Match"
+            label="Avg eDNA Sample Confidence"
             value={avgConfidence ?? '-'}
             suffix={avgConfidence !== null ? '%' : ''}
-            note={`${ednaSamples.length} genomic assays processed`}
+            note={`Mean of the confidence field across ${ednaSamples.length} packaged assay records`}
           />
         </section>
 
