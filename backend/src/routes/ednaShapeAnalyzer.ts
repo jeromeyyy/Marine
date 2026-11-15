@@ -86,8 +86,8 @@ router.post('/predict', async (req: Request, res: Response) => {
       deep_layer: deepLayer || 4,
     });
 
-    // Enhance result with confidence scoring
-    const confidence = calculateConfidence(cleanSeq.length, mlResult);
+    // No calibrated confidence is available for this simplified calculator.
+    const confidence = null;
 
     res.json({
       success: true,
@@ -363,26 +363,6 @@ function generateCSV(results: any[]): string {
   }
 
   return rows.join('\n');
-}
-
-/**
- * Helper: Calculate confidence score
- */
-function calculateConfidence(sequenceLength: number, mlResult: any): number {
-  // Base confidence from sequence length
-  let confidence = Math.min(sequenceLength / 500, 1.0); // 500bp = max confidence from length
-
-  // Adjust based on prediction variance
-  const variance = mlResult.statistics.std;
-  const meanValue = mlResult.statistics.mean;
-
-  if (meanValue !== 0) {
-    const cv = variance / Math.abs(meanValue); // Coefficient of variation
-    const varianceScore = Math.exp(-cv); // Lower variance = higher confidence
-    confidence = (confidence + varianceScore) / 2;
-  }
-
-  return Math.round(confidence * 100) / 100;
 }
 
 export default router;
