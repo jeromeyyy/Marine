@@ -1,0 +1,14 @@
+# Slim ML service for free-tier hosting (no full TensorFlow, no torch).
+# Measured on this exact pinned stack (python 3.10): complete combined service
+# (FastAPI app + edna_shape both contracts + joblib artifacts + TFLite otolith
+# model) peaked at ~208 MB RSS under 8-way concurrent load; Render free web
+# service allows 512 MB. Bounded-workload measurement, not a capacity guarantee.
+fastapi==0.162.5
+uvicorn[standard]==0.54.0
+numpy==1.24.4
+tflite-runtime==2.14.0
+scikit-learn==1.3.2
+joblib==1.6.0
+pydantic==2.14.3
+pillow==12.3.0
+python-multipart==0.0.32
