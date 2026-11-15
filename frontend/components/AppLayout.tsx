@@ -72,8 +72,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const calculator = pathname === '/edna-shape-analyzer';
   return <>
     <Navigation />
-    <main className="min-h-screen bg-[#070c18] pt-14 text-slate-100 lg:ml-72 lg:pt-0">
-      <div className={`sticky top-14 z-30 lg:top-0 border-b p-4 shadow-lg ${mode === 'demo' ? 'border-amber-500 bg-amber-950 text-amber-100' : 'border-cyan-900 bg-slate-950 text-cyan-100'}`}>
+    <main className={`min-h-screen bg-[#070c18] text-slate-100 ${pathname === '/' ? 'pt-16' : 'pt-14 lg:ml-72 lg:pt-0'}`}>
+      <div className={`sticky z-30 border-b p-4 shadow-lg ${pathname === '/' ? 'top-16' : 'top-14 lg:top-0'} ${mode === 'demo' ? 'border-amber-500 bg-amber-950 text-amber-100' : 'border-cyan-900 bg-slate-950 text-cyan-100'}`}>
         <div className="flex flex-wrap items-center justify-between gap-3"><p className="max-w-3xl text-sm"><strong>{mode === 'demo' ? 'DEMO MODE' : 'FILE-BACKED MODE'}</strong> {mode === 'demo' ? '- Generated examples, not observations, validated forecasts or live monitoring. Exports and screenshots are demonstration material only.' : '- Packaged species/location records only. Missing measurements are not generated.'}</p>
           {mode && <button className="rounded-lg border border-current px-4 py-2 text-sm" onClick={switchMode}>{mode === 'demo' ? 'Return to file-backed views' : 'Enter Demo mode'}</button>}</div>
       </div>
