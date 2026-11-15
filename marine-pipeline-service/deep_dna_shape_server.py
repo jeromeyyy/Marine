@@ -16,7 +16,6 @@ sys.path.insert(0, os.path.join(ROOT_DIR, 'pipelines'))
 
 from pipelines.deep_dna_shape_pipeline import (
     predict,
-    SpeciesClassifier,
     EcologicalMetrics,
     generate_csv_from_predictions,
 )
@@ -111,15 +110,13 @@ if FASTAPI_AVAILABLE:
     @app.post('/species-classify')
     async def classify_species(request: PredictRequest):
         """Classify species from sequences"""
-        try:
-            species_results = SpeciesClassifier.classify(request.sequences)
-            return {
-                'success': True,
-                'species': species_results,
-            }
-        except Exception as e:
-            logger.error(f'Classification error: {str(e)}')
-            raise HTTPException(status_code=500, detail=str(e))
+        # Removed: the previous implementation returned a fixed hardcoded
+        # species list regardless of input. No trained classifier or
+        # validated reference database exists in the repository.
+        raise HTTPException(
+            status_code=501,
+            detail='Automated species classification is not supported: no trained classifier or validated reference database in the repository',
+        )
 
     @app.post('/ecological-metrics')
     async def get_ecological_metrics(request: PredictRequest):
