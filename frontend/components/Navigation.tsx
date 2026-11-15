@@ -147,19 +147,19 @@ export default function Navigation() {
           <div className="mt-4 rounded-2xl border border-slate-800 bg-slate-900/90 p-3.5 shadow-inner">
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
-                <div className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_#34d399]"></div>
+                <div className="h-2 w-2 rounded-full bg-slate-500"></div>
                 <span className="text-[11px] font-bold uppercase tracking-wider text-slate-300">Platform Data</span>
               </div>
-              <span className="text-[10px] rounded bg-emerald-950/80 px-1.5 py-0.5 text-emerald-400 border border-emerald-500/30">ONLINE</span>
+              <span className="text-[10px] rounded bg-slate-950/80 px-1.5 py-0.5 text-slate-400 border border-slate-500/30">PROTOTYPE</span>
             </div>
             <div className="space-y-1 text-[11px] text-slate-400">
               <div className="flex justify-between">
                 <span>Otolith model:</span>
-                <span className="text-cyan-400 font-mono">MobileNetV2, 37 classes</span>
+                <span className="text-cyan-400 font-mono">37 classes, unvalidated</span>
               </div>
               <div className="flex justify-between">
                 <span>Spatial records:</span>
-                <span className="text-slate-300 font-mono">500 / 169 stations</span>
+                <span className="text-slate-300 font-mono">packaged file</span>
               </div>
               <div className="flex justify-between">
                 <span>Forecasting:</span>
