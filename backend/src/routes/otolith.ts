@@ -519,7 +519,7 @@ router.post('/predict', upload.single('image'), async (req: Request, res: Respon
       // classification to report.
       return res.status(503).json({
         success: false,
-        error: 'Otolith classification service unavailable: no ML service is configured or reachable for this deployment'
+        error: 'Otolith classification service unavailable: the ML service is not configured or not reachable for this deployment. If the service was idle, it may be starting up now - wait a short while and retry. If this keeps failing, the deployment has no reachable ML service.'
       });
     }
 
